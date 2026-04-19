@@ -50,3 +50,6 @@ engine/*.frx
 
 # Logs
 *.log
+
+# Temp text extracts from NAIC PDFs
+RBC/_*.txt
