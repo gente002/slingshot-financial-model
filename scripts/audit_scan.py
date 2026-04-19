@@ -18,15 +18,19 @@ Bug classes detected:
      Mirror formula of the form `{REF:X!Y}` (no ABS) where Y's name
      matches a known signed-negative pattern (CRSV, CEDED_*, _CEDED,
      _CRSV). Flagged as potential sign bug; human review required.
+  5. VBA method-call drift (added 2026-04-19 per BUG-187)
+     `ModuleName.MethodName` call where MethodName does NOT exist as
+     Public Sub/Function in ModuleName.bas. Produces compile error.
 
 This is intentionally a STATIC scanner. It does not execute formulas
-or invoke Excel. It works by parsing the CSV config.
+or invoke Excel. It works by parsing the CSV config + .bas files.
 """
 import csv
 import re
 import sys
 from collections import defaultdict
 
+ENGINE_DIR = r"c:/Users/gente/Downloads/RDK_v1.3.0_20260403_latest/engine"
 CONFIG_PATH = r"c:/Users/gente/Downloads/RDK_v1.3.0_20260403_latest/config/formula_tab_config.csv"
 TAB_REGISTRY_PATH = r"c:/Users/gente/Downloads/RDK_v1.3.0_20260403_latest/config/tab_registry.csv"
 NAMED_RANGE_PATH = r"c:/Users/gente/Downloads/RDK_v1.3.0_20260403_latest/config/named_range_registry.csv"
@@ -279,6 +283,107 @@ def check_row_collisions(rows):
     return findings
 
 
+def check_vba_method_drift():
+    """Bug class 5: ModuleName.MethodName call where MethodName is not a
+    Public Sub/Function in ModuleName.bas. Catches BUG-187 class.
+
+    VBA is case-insensitive, so comparisons use lower-case. This scan
+    is heuristic -- it uses regex rather than a full VBA parser, so it
+    may have false positives on unusual syntax (e.g., method name split
+    across a line continuation). Those cases can be filtered by the
+    CALL_PATTERN_EXCEPTIONS set if they arise.
+    """
+    import os, glob
+    findings = []
+
+    # Step 1: build module -> set of public method/variable/const names
+    # VBA has multiple flavors of Public declaration, all callable as
+    # ModuleName.Identifier from another module:
+    #   Public Sub NAME / Public Function NAME
+    #   Public Property Get/Let/Set NAME
+    #   Public Const NAME
+    #   Public Type NAME
+    #   Public Declare Sub/Function NAME
+    #   Public NAME As Type  (module-level variable)
+    module_publics = {}  # module_name_lower -> set of identifier_lower
+    module_files = {}    # module_name_lower -> file path
+    public_def_patterns = [
+        # Procedures
+        re.compile(r"^\s*Public\s+(?:Sub|Function)\s+([A-Za-z_]\w*)",
+                   re.MULTILINE | re.IGNORECASE),
+        # Properties
+        re.compile(r"^\s*Public\s+Property\s+(?:Get|Let|Set)\s+([A-Za-z_]\w*)",
+                   re.MULTILINE | re.IGNORECASE),
+        # Constants
+        re.compile(r"^\s*Public\s+Const\s+([A-Za-z_]\w*)",
+                   re.MULTILINE | re.IGNORECASE),
+        # Types
+        re.compile(r"^\s*Public\s+Type\s+([A-Za-z_]\w*)",
+                   re.MULTILINE | re.IGNORECASE),
+        # API declarations
+        re.compile(r"^\s*Public\s+Declare\s+(?:PtrSafe\s+)?(?:Sub|Function)\s+([A-Za-z_]\w*)",
+                   re.MULTILINE | re.IGNORECASE),
+        # Module-level variables: "Public NAME As TYPE", "Public NAME()",
+        # "Public NAME(1 To 10) As TYPE", "Public NAME(1 To 10, 1 To 3) As TYPE"
+        re.compile(r"^\s*Public\s+([A-Za-z_]\w*)\s*(?:\([^)]*\))?\s*(?:As\b|$)",
+                   re.MULTILINE | re.IGNORECASE),
+    ]
+    for path in sorted(glob.glob(os.path.join(ENGINE_DIR, "*.bas"))):
+        mod_name = os.path.splitext(os.path.basename(path))[0]
+        mod_lower = mod_name.lower()
+        module_files[mod_lower] = path
+        try:
+            with open(path, "r", encoding="latin-1", errors="ignore") as f:
+                content = f.read()
+        except FileNotFoundError:
+            continue
+        publics = set()
+        for pattern in public_def_patterns:
+            for m in pattern.finditer(content):
+                publics.add(m.group(1).lower())
+        module_publics[mod_lower] = publics
+
+    # Step 2: scan each .bas file for ModuleX.MethodY calls; verify MethodY in ModuleX.publics
+    # Pattern: Word.Word( where first Word is a known module name
+    call_pattern = re.compile(
+        r"\b([A-Z][A-Za-z0-9_]+)\s*\.\s*([A-Za-z_][A-Za-z0-9_]*)\s*[\s(]",
+    )
+    for path in sorted(glob.glob(os.path.join(ENGINE_DIR, "*.bas"))):
+        with open(path, "r", encoding="latin-1", errors="ignore") as f:
+            lines = f.readlines()
+        caller_mod = os.path.splitext(os.path.basename(path))[0].lower()
+        for line_num, ln in enumerate(lines, 1):
+            # Skip comment lines
+            stripped = ln.lstrip()
+            if stripped.startswith("'"):
+                continue
+            for m in call_pattern.finditer(ln):
+                target_mod = m.group(1).lower()
+                target_method = m.group(2).lower()
+                # Only check if target is a known kernel module
+                if target_mod not in module_publics:
+                    continue
+                if target_mod == caller_mod:
+                    continue  # same-module call, skip (can call Private too)
+                if target_method in module_publics[target_mod]:
+                    continue  # method exists, OK
+                # Heuristic: VBA built-in types/objects we should not flag
+                # (e.g., "Application.Run", "Range.Select", ...)
+                # We've already filtered by "target in module_publics" so
+                # only kernel-module targets reach here.
+                findings.append({
+                    "class": "VBA method-call drift",
+                    "tab": os.path.basename(path),
+                    "rowid": f"line {line_num}",
+                    "row": str(line_num),
+                    "col": "N/A",
+                    "target": f"{m.group(1)}.{m.group(2)}",
+                    "severity": "CRITICAL",
+                    "note": f"Method '{m.group(2)}' not found as Public Sub/Function in {m.group(1)}.bas (compile error)",
+                })
+    return findings
+
+
 def check_sign_convention(rows):
     """Bug class 4: {REF:X!Y} without ABS where Y matches signed-negative pattern."""
     findings = []
@@ -320,6 +425,7 @@ def main():
     all_findings += check_ref_resolves(rows, tab_rowid_cells, tab_registry)
     all_findings += check_row_collisions(rows)
     all_findings += check_sign_convention(rows)
+    all_findings += check_vba_method_drift()
 
     # Summary
     by_class = defaultdict(list)

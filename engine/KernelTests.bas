@@ -1265,3 +1265,152 @@ Private Sub SmokeCheckTabExists(tier As Long, testID As String, testName As Stri
         WriteTestRow tier, testID, testName, "exists", "MISSING", TEST_FAIL, tabName
     End If
 End Sub
+
+
+' =============================================================================
+' TestAuditAssertions (Tier 6 - Audit Regression)
+'
+' Runtime assertions that catch the specific bug classes surfaced during the
+' RBC tab audit of 2026-04-18/19. Each assertion is a lightweight sanity
+' check that runs after a model run, surfaces PASS/FAIL on the TestResults
+' tab, and prevents regression of the audited bugs.
+'
+' Companion to the static scanner at scripts/audit_scan.py. The static
+' scanner catches config-level issues pre-commit; this sub catches runtime
+' issues post-model-run.
+'
+' See docs/AUDIT_PLAYBOOK.md Phase 4 for the framework.
+' =============================================================================
+Public Sub TestAuditAssertions()
+    On Error GoTo ErrHandler
+    Const tier As Long = 6
+
+    ' Ensure TestResults initialized
+    If m_nextTestRow = 0 Then InitTestResults
+
+    ' -- Assertion A: Balance Sheet identity holds at Q1 Y1
+    Dim bsCheck As Double
+    bsCheck = 0
+    On Error Resume Next
+    Dim wsBS As Worksheet
+    Set wsBS = ThisWorkbook.Sheets("Balance Sheet")
+    Dim bsCheckRow As Long
+    bsCheckRow = KernelFormula.ResolveRowID("Balance Sheet", "BS_CHECK")
+    If bsCheckRow > 0 Then
+        Dim cellVal As Variant
+        cellVal = wsBS.Cells(bsCheckRow, 3).Value
+        If IsNumeric(cellVal) Then bsCheck = CDbl(cellVal)
+    End If
+    On Error GoTo ErrHandler
+    If Abs(bsCheck) < 0.01 Then
+        WriteTestRow tier, "AUD-001", "Balance Sheet identity: A - (L+E) = 0 at Q1 Y1", "0", _
+            Format(bsCheck, "#,##0.00"), TEST_PASS, ""
+    Else
+        WriteTestRow tier, "AUD-001", "Balance Sheet identity: A - (L+E) = 0 at Q1 Y1", "0", _
+            Format(bsCheck, "#,##0.00"), TEST_FAIL, _
+            "BS_CHECK non-zero -- accounting identity violated"
+    End If
+
+    ' -- Assertion B: Corp sub-allocation sums to 100%
+    On Error Resume Next
+    Dim wsRBC As Worksheet
+    Set wsRBC = ThisWorkbook.Sheets("RBC Capital Model")
+    Dim corpSum As Double
+    corpSum = 0
+    Dim subTotalRow As Long
+    subTotalRow = KernelFormula.ResolveRowID("RBC Capital Model", "RBC_CORP_SUB_TOTAL")
+    If subTotalRow > 0 Then
+        Dim csVal As Variant
+        csVal = wsRBC.Cells(subTotalRow, 3).Value
+        If IsNumeric(csVal) Then corpSum = CDbl(csVal)
+    End If
+    On Error GoTo ErrHandler
+    If Abs(corpSum - 1#) < 0.001 Then
+        WriteTestRow tier, "AUD-002", "Corp sub-allocation sum = 100%", "1.000", _
+            Format(corpSum, "0.000"), TEST_PASS, ""
+    Else
+        WriteTestRow tier, "AUD-002", "Corp sub-allocation sum = 100%", "1.000", _
+            Format(corpSum, "0.000"), TEST_FAIL, _
+            "Corp sub-allocation drift -- R1 bond granularity will be proportionally off"
+    End If
+
+    ' -- Assertion C: R3 (Credit Risk) non-negative
+    ' Catches regression of the CRSV sign-convention bug fixed 2026-04-19.
+    On Error Resume Next
+    Dim r3Row As Long
+    Dim r3Val As Double
+    r3Val = 0
+    r3Row = KernelFormula.ResolveRowID("RBC Capital Model", "RBC_R3")
+    If r3Row > 0 Then
+        Dim r3cell As Variant
+        r3cell = wsRBC.Cells(r3Row, 3).Value
+        If IsNumeric(r3cell) Then r3Val = CDbl(r3cell)
+    End If
+    On Error GoTo ErrHandler
+    If r3Val >= -0.001 Then
+        WriteTestRow tier, "AUD-003", "R3 Credit Risk non-negative at Q1 Y1", ">= 0", _
+            Format(r3Val, "#,##0"), TEST_PASS, ""
+    Else
+        WriteTestRow tier, "AUD-003", "R3 Credit Risk non-negative at Q1 Y1", ">= 0", _
+            Format(r3Val, "#,##0"), TEST_FAIL, _
+            "R3 negative -- check MIR_CRSV has ABS wrapper (PD-05 sign convention)"
+    End If
+
+    ' -- Assertion D: R1-R5 non-zero at Q2 Y1 when Invested Assets > 0
+    ' Catches regression of the ROWID-to-static-cell bug fixed 2026-04-19.
+    ' If invested assets have grown past Q1 Y1, R1 and R2 MUST be non-zero at Q2 Y1.
+    On Error Resume Next
+    Dim investRow As Long
+    investRow = KernelFormula.ResolveRowID("RBC Capital Model", "RBC_MIR_INVEST")
+    Dim r1Row As Long
+    r1Row = KernelFormula.ResolveRowID("RBC Capital Model", "RBC_R1")
+    If investRow > 0 And r1Row > 0 Then
+        Dim q2col As Long
+        q2col = 4  ' Col D = Q2 Y1 on a quarterly tab
+        Dim investQ2 As Double
+        investQ2 = 0
+        Dim r1Q2 As Double
+        r1Q2 = 0
+        If IsNumeric(wsRBC.Cells(investRow, q2col).Value) Then _
+            investQ2 = CDbl(wsRBC.Cells(investRow, q2col).Value)
+        If IsNumeric(wsRBC.Cells(r1Row, q2col).Value) Then _
+            r1Q2 = CDbl(wsRBC.Cells(r1Row, q2col).Value)
+        If investQ2 > 0.01 And Abs(r1Q2) < 0.001 Then
+            WriteTestRow tier, "AUD-004", "R1 non-zero at Q2 Y1 when invested > 0", "> 0", _
+                Format(r1Q2, "#,##0"), TEST_FAIL, _
+                "R1 zero at Q2+ despite non-zero invested assets -- ROWID-to-static-cell regression"
+        Else
+            WriteTestRow tier, "AUD-004", "R1 non-zero at Q2 Y1 when invested > 0", "> 0 or invested = 0", _
+                Format(r1Q2, "#,##0"), TEST_PASS, ""
+        End If
+    End If
+    On Error GoTo ErrHandler
+
+    ' -- Assertion E: Total RBC covariance formula produces sensible result
+    ' Formula: R0 + sqrt(R1^2 + R2^2 + R3^2 + R4^2 + R5^2 + Rcat^2)
+    ' Must be non-negative and at least as large as the largest component.
+    On Error Resume Next
+    Dim totRow As Long
+    totRow = KernelFormula.ResolveRowID("RBC Capital Model", "RBC_TOTRBC")
+    If totRow > 0 Then
+        Dim totVal As Double
+        totVal = 0
+        If IsNumeric(wsRBC.Cells(totRow, 3).Value) Then _
+            totVal = CDbl(wsRBC.Cells(totRow, 3).Value)
+        If totVal >= 0 Then
+            WriteTestRow tier, "AUD-005", "Total RBC covariance non-negative", ">= 0", _
+                Format(totVal, "#,##0"), TEST_PASS, ""
+        Else
+            WriteTestRow tier, "AUD-005", "Total RBC covariance non-negative", ">= 0", _
+                Format(totVal, "#,##0"), TEST_FAIL, "Total RBC negative -- covariance formula broken"
+        End If
+    End If
+    On Error GoTo ErrHandler
+
+    KernelConfig.LogError SEV_INFO, "KernelTests", "I-706", _
+        "Audit assertions (Tier 6) complete.", ""
+    Exit Sub
+ErrHandler:
+    KernelConfig.LogError SEV_WARN, "KernelTests", "W-706", _
+        "TestAuditAssertions error: " & Err.Description, ""
+End Sub

@@ -36,11 +36,12 @@ Every finding gets classified into one of these and assigned a severity:
 
 **Command.** `python3 scripts/audit_scan.py`
 
-**What it detects.** Four bug classes surfaced during the 2026-04-18/19 RBC audit:
+**What it detects.** Five bug classes surfaced during the 2026-04-18/19 RBC audit:
 1. `{ROWID:X}` in quarterly formula where X is a single-cell static input → empty at Q2+
 2. `{REF:Tab!RowID}` where RowID is undefined → `#REF!`
 3. Duplicate `(row, col)` collisions → RowID cache indexes only one
 4. Signed-convention mirrors without ABS or leading-minus → sign inversion bugs
+5. `ModuleName.MethodName` VBA call where MethodName is not a Public declaration in ModuleName.bas → compile error (added 2026-04-19 per BUG-187)
 
 **Expected output.** Zero findings = pass. Any non-zero finding blocks merge.
 
@@ -87,24 +88,31 @@ Every finding gets classified into one of these and assigned a severity:
 
 **Effort.** ~2 hours once the NAIC doc is in hand. The 2026-04-18 session confirmed 5 of 6 columns match NAIC 2025; R5 InvAdj column was stale.
 
-### Phase 4 — Regression assertions in `KernelTests` (manual)
+### Phase 4 — Regression assertions (IMPLEMENTED 2026-04-19)
 
-**Command.** Extend `engine/KernelTests.bas` with `Public Sub TestAuditAssertions()` that runs inside Excel at model-run time. Runs automatically via `KernelTests.RunAllTests`.
+**Static layer.** `scripts/audit_scan.py` Bug Class 5 detects VBA method-call drift (see Phase 1 entry above). Would have caught BUG-187 at commit time.
 
-**What to assert.**
-- Balance Sheet identity: `BS_CHECK` row = 0 at every period
-- Income Statement closure: Net Income = sum of components (sanity)
+**Runtime layer.** `KernelTests.TestAuditAssertions()` in `engine/KernelTests.bas`. Five assertions against the bug classes surfaced during the 2026-04-18/19 sessions:
+
+| ID | Assertion | Regression it prevents |
+|---|---|---|
+| AUD-001 | `BS_CHECK` = 0 at Q1 Y1 | Balance Sheet identity violation |
+| AUD-002 | `RBC_CORP_SUB_TOTAL` = 100% | Corp allocation drift |
+| AUD-003 | `RBC_R3` ≥ 0 | CRSV sign-convention regression |
+| AUD-004 | `RBC_R1` non-zero at Q2 Y1 when invested > 0 | ROWID-to-static-cell regression |
+| AUD-005 | `RBC_TOTRBC` ≥ 0 | Covariance formula drift |
+
+**Additional assertions to add later (not blocking for initial ship)**:
+- Income Statement closure: Net Income = sum of components
 - Cash Flow closure: Opening + Operating + Investing + Financing = Ending
-- Quarterly-to-annual: sum of Q1..Q4 = Y Total for flow items; Q4 = Y Total for balance items
-- UWEX-to-UW-Program-Detail tie-outs: aggregate = sum of programs (within tolerance)
+- Quarterly-to-annual: sum of Q1..Q4 = Y Total (flow); Q4 = Y Total (balance)
+- UWEX-to-UW-Program-Detail tie-outs
 - PRNG determinism: same seed → same output
-- Workspace round-trip: save → load → save produces identical manifest fingerprint
-- RBC covariance: Total RBC = R0 + SQRT(R1² + R2² + R3² + R4² + R5² + Rcat²)
-- Corp sub-allocation: `SUM($C$103:$C$108)` = 100%
+- Workspace round-trip fingerprint (existing in `KernelWorkspaceExt.TestWorkspaceRoundTrip`)
 
-**Expected output.** Failures logged to `Error Log` tab with severity.
+**Output.** PASS/FAIL on TestResults tab, Tier 6. Invoke via `KernelTests.TestAuditAssertions` or as part of `RunTests`.
 
-**Effort.** ~3 hours for initial implementation. Pays compounding dividends once in place.
+**Effort to extend.** ~20 min per new assertion.
 
 ### Phase 5 — Consolidated audit report
 
