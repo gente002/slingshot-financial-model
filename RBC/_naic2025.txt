@@ -1,0 +1,276 @@
+Property and Casualty
+Risk-Based Capital / Newsletter
+
+                                                        September 2025 / Volume 29.2
+
+What Risk-Based Capital Pages
+Should Be Submitted?
+
+For year-end 2025 property/casualty (P/C) risk-based
+capital (RBC) hard copies of pages PR001­PR035,
+as well as pages PR038 and PR039, should be
+submitted to any state that requests a hard copy.
+Beginning with year-end 2011 RBC, a hard copy was
+not required to be submitted to the NAIC, but a PDF
+representing the hard-copy filing is part of the elec-
+tronic filing with the NAIC.
+
+Investment Risk                                         In This Issue:
+
+Principle-Based Bond Definition                         Principle-Based Bond Definition / 1
+                                                        Tax Credit Investments / 1
+The Capital Adequacy (E) Task Force adopted pro-        Underwriting Risk Factors (PR020) / 2
+posal 2024-25-CA during its May 15 meeting. This        Trend Test / 2
+proposal incorporates changes adopted by the            Underwriting Risk Factors Lines 4 and 8 / 3
+Blanks (E) Working Group, namely #2023-06BWG            New Industry Average Risk Factors--Annual Update / 5
+MOD, #2023-07BWG MOD, and #2023-12BWG                   Catastrophe Risk/ 6
+MOD. These changes resulted from the adoption of        Editorial Changes/ 6
+the principle-based bond definition by the Statutory    Risk-Based Capital Forecasting and Instructions/ 6
+Accounting Principles (E) Working Group.                Contact Information / 6
+
+The proposal impacts the following pages: PR005,
+PR006, PR007, PR008, PR009, PR015, and PR030.
+
+Tax Credit Investments
+
+The Capital Adequacy (E) Task Force adopted pro-
+posal 2024-26-CA during its May 15 meeting. This
+proposal updates the RBC instructions and blanks
+for the adopted Statutory Accounting Principles (E)
+Working Group's conceptual changes to Statement of
+Statutory Accounting Principles (SSAP) No. 93--Invest-
+ments in Tax Credit Structures and SSAP No. 94--State
+and Federal Tax Credits resulting from the New Market
+Tax Credits project (SAPWG Ref# 2022-14) and the
+corresponding changes in annual statement blanks
+and instructions as per 2024-11BWG MOD adopted
+by the Blanks (E) Working Group.
+
+NAIC property and casualty Risk-Based Capital Newsletter / september 2025  /1
+Accident and Health Business
+
+Underwriting Risk Factors (PR020)
+
+The Capital Adequacy (E) Task Force adopted proposal 2025-03-CA during its June 30 meeting. This proposal
+updated the comprehensive medical, Medicare supplement, and dental and vision factors to include a 4.5%
+investment yield adjustment. The revised factors are:
+
+$0­$3 Million     Comprehensive Medical  Medicare Supplement               Dental & Vision
+$3­$25 Million    0.1440                 0.0987                            0.1153
+Over $25 Million  0.1440                 0.0609                            0.0716
+                  0.0844                 0.0609                            0.0716
+
+Trend Test
+
+The Capital Adequacy (E) Task Force adopted proposal 2025-07-CA MOD during its May 15 meeting.
+This proposal expands the instructions for PR033 to facilitate consistent labeling of various company action
+levels across lines of business.
+
+NAIC property and casualty Risk-Based Capital Newsletter / september 2025                   /2
+Underwriting Risk
+
+Underwriting Risk Factors Lines 4 and 8
+
+As a result of the adoption of proposal 2024-11-P by the Capital Adequacy (E) Task Force during its April 30,
+2024, meeting, lines 4 and 8 factors were based on the 2023 American Academy of Actuaries' (Academy's)
+Update to Property and Casualty Risk-Based Capital Underwriting Factors and Investment Income Adjustment
+Factors report. During the Property and Casualty Risk-Based Capital (E) Working Group's April 25, 2024, meet-
+ing, the Working Group decided to use 100% indicated change with capped international and product liability
+lines for reserves and 100% indicated change with capped financial mortgage guaranty lines for premium for
+2025 reporting.
+
+PR017 Underwriting Risk ­ Reserves                      PR017 Underwriting Risk ­ Reserves
+
+Proposed Line (4), Industry Loss & Expense RBC Factors  Proposed Line (8), Adjustment for Investment Income
+
+                                    2025    2024                                            2025    2024
+                                            Factor                                                  Factor
+Col. Line of Business               Factor  0.220       Col. Line of Business               Factor  0.945
+                                            0.192                                                   0.933
+(1) H/F                             0.226   0.318       (1) H/F                             0.951   0.919
+                                            0.363                                                   0.807
+(2) PPA                             0.205   0.485       (2) PPA                             0.937   0.887
+                                            0.327                                                   0.863
+(3) CA                              0.360   0.224       (3) CA                              0.926   0.890
+                                            0.353                                                   0.887
+(4) WC                              0.382   0.514       (4) WC                              0.783   0.858
+                                            0.479                                                   0.924
+(5) CMP                             0.475   0.259       (5) CMP                             0.898   0.960
+
+(6) MPL Occurrence                  0.271   0.146       (6) MPL Occurrence                  0.861   0.977
+                                            0.223                                                   0.952
+(7) MPL Claims Made                 0.172   0.163       (7) MPL Claims Made                 0.896   0.921
+
+(8) SL                              0.401   0.514       (8) SL                              0.884   0.878
+                                            0.367                                                   0.907
+(9) OL                              0.496   0.626       (9) OL                              0.864   0.816
+                                            1.014                                                   0.843
+(10) Fidelity/Surety                0.586   0.363       (10) Fidelity/Surety                0.908   0.951
+
+(11) Special Property/Pet 0.272                         (11) Special Property/Pet 0.954
+
+Insurance Plan                                          Insurance Plan
+
+(12) Auto Physical Damage 0.137                         (12) Auto Physical Damage 0.978
+
+(13) Other (Credit A&H)             0.225               (13) Other (Credit A&H)             0.936
+
+(14) Financial/Mortgage             0.146               (14) Financial/Mortgage             0.916
+
+Guaranty                                                Guaranty
+
+(15) INTL                           0.669               (15) INTL                           0.881
+
+(16) REIN. P&F Lines                0.319               (16) REIN. P&F Lines                0.913
+
+(17) REIN. Liability                0.596               (17) REIN. Liability                0.793
+
+(18) PL                             1.226               (18) PL                             0.844
+
+(19) Warranty                       0.355               (19) Warranty                       0.961
+
+NAIC property and casualty Risk-Based Capital Newsletter / september 2025                           /3
+Underwriting Risk Factors Lines 4 and 8 (continued)
+
+PR018 Underwriting Risk ­ Premiums                    PR018 Underwriting Risk ­ Premiums
+                                                      Proposed Line (7), Adjustment for Investment Income
+Proposed Line (4), Industry Losses & Loss Adjustment
+
+Expense Ratio
+
+Col. Line of Business       2025 2024                 Col.   Line of Business      2025    2024
+                            Factor Factor             (1)*   H/F                   Factor  Factor
+                                                      (2)    PPA                   0.966   0.960
+(1)* H/F                    0.930 0.933               (3)    CA                    0.937   0.931
+                                                      (4)    WC                    0.903   0.897
+(2) PPA                     0.970 0.970               (5)*   CMP                   0.833   0.836
+                                                      (6)    MPL Occurrence        0.921   0.909
+(3) CA                      1.014   1.012             (7)    MPL Claims Made       0.795   0.781
+(4) WC                      1.037   1.041             (8)*   SL                    0.863   0.845
+                                                      (9)    OL                    0.924   0.911
+(5)* CMP                    0.873 0.878               (10)   Fidelity/Surety       0.837   0.827
+                                                      (11)*  Special Property/Pet  0.922   0.913
+(6) MPL Occurrence          1.394 1.531                      Insurance             0.957   0.953
+                                                      (12)   Auto Physical Damage
+(7) MPL Claims Made         1.146 1.138               (13)   Other (Credit A&H)    0.979   0.975
+                                                      (14)   Financial/Mortgage    0.958   0.953
+(8)* SL                     0.894 0.908                      Guaranty              0.891   0.888
+                                                      (15)*  INTL
+(9) OL                      0.993 1.003               (16)*  REIN. P&F Lines       0.925   0.915
+                                                      (17)*  REIN. Liability       0.919   0.906
+(10) Fidelity/Surety        0.657 0.756               (18)   PL                    0.811   0.794
+                                                      (19)   Warranty              0.801   0.788
+(11)* Special Property/Pet  0.795 0.829                                            0.972   0.938
+          Insurance
+
+(12) Auto Physical Damage 0.835 0.836
+
+(13) Other (Credit A&H)     0.926 0.931
+
+(14) Financial/Mortgage     2.012   1.805
+          Guaranty          1.476   1.355
+
+(15)* INTL
+
+(16)* REIN. P&F Lines       0.973 1.072
+
+(17)* REIN. Liability       1.183 1.253
+
+(18) PL                     1.194 1.229
+
+(19) Warranty               0.985 0.920
+
+* Cat Lines
+
+NAIC property and casualty Risk-Based Capital Newsletter / september 2025                  /4
+New Industry Average Risk Factors ­ Annual Update
+
+During its June 30 meeting, the Capital Adequacy (E) Task Force adopted the annual update of industry
+average development factors.
+
+PR017 Underwriting Risk ­ Reserves                  PR018 Underwriting Risk ­ Net Written Premiums
+
+Line (1), Industry Development Factors              Line (1), Industry Average Loss and Expense Ratios
+
+                                    2025    2024                                 2025    2024
+                                            Factor                               Factor  Factor
+Col. Line of Business               Factor  1.020   Col.   Line of Business      0.700   0.695
+                                            1.061   (1)*   H/F                   0.807   0.799
+(1) H/F                             0.997   1.115   (2)    PPA                   0.792   0.787
+                                            0.882   (3)    CA                    0.649   0.646
+(2) PPA                             1.072   1.024   (4)    WC                    0.683   0.684
+                                            0.910   (5)*   CMP                   0.763   0.752
+(3) CA                              1.110   0.996   (6)    MPL Occurrence        0.840   0.828
+                                            0.996   (7)    MPL Claims Made       0.565   0.583
+(4) WC                              0.912   0.993   (8)*   SL                    0.664   0.649
+                                            0.875   (9)    OL                    0.374   0.375
+(5) CMP                             1.018   0.989   (10)   Fidelity/Surety       0.552   0.559
+                                                    (11)*  Special Property/Pet
+(6) MPL Occurrence                  0.914   0.999          Insurance             0.731   0.733
+                                            0.942   (12)   Auto Physical Damage  0.714   0.711
+(7) MPL Claims Made                 1.024   0.493   (13)   Other (Credit A&H)    0.159   0.158
+                                                    (14)   Financial/Mortgage
+(8) SL                              0.995   2.168          Guaranty              1.184   1.153
+                                            0.930   (15)*  INTL                  0.597   0.587
+(9) OL                              0.995   1.054   (16)*  REIN. P&F Lines       0.788   0.760
+                                            0.882   (17)*  REIN. Liability       0.609   0.594
+(10) Fidelity/Surety                0.875   0.991   (18)   PL                    0.641   0.641
+                                                    (19)   Warranty
+(11) Special Property/Pet 0.985
+
+Insurance
+
+(12) Auto Physical Damage 1.002
+
+(13) Other (Credit A&H)             0.938
+
+(14) Financial/Mortgage             0.486
+
+Guaranty
+
+(15) INTL                           1.927
+
+(16) REIN. P&F Lines                0.925
+
+(17) REIN. Liability                1.090
+
+(18) PL                             0.911
+
+(19) Warranty                       0.978
+
+* Cat Lines
+
+NAIC property and casualty Risk-Based Capital Newsletter / september 2025                               /5
+Catastrophe Risk                                             Risk-Based Capital Forecasting
+                                                             and Instructions
+Disclosure of Climate-Conditioned                            The P/C RBC forecasting spreadsheet calculates RBC
+Catastrophe Exposure Instruction                             using the same formula presented in the 2025 NAIC
+                                                             Property & Casualty Risk-Based Capital Report Includ-
+The Capital Adequacy (E) Task Force adopted pro-             ing Overview & Instructions for Companies, and is
+posal 2025-06-CR during its meeting on May 15. This          available to download from the NAIC publications
+proposal ensures that the information provided by            web page at https://content.naic.org/publications
+companies is accurately reflected on an annual basis.        in a PDF or CSV format. This publication is available
+                                                             for on or around Nov. 1 each year. The user guide is
+Catastrophe Modeling Attestation (PR002)                     no longer included in the RBC publications.
+
+The Capital Adequacy (E) Task Force adopted pro-             WARNING: The RBC forecasting spreadsheet CAN-
+posal 2025-11-CR during its June 30 meeting. The             NOT be used to meet the year-end RBC electronic
+proposal updates the PR002 Attestation by incorpo-           filing requirement. RBC filing software from an annual
+rating the newly identified wildfire and severe con-         financial statement software vendor should be used
+vective storm perils from PR027 for informational            to create the electronic filing. If the forecasting work-
+purposes only.                                               sheet is sent instead of an electronic filing, it will not
+                                                             be accepted, and the RBC will not be filed.
+Editorial Changes
+Updated the annual statement reference for line
+1, column 2, of page PR006 to Schedule D, part
+1, section 2, column 8, line 1019999999 and line
+1029999999
+
+© 2025 NATIONAL ASSOCIATION OF INSURANCE COMMISSIONERS
+
+Property and Casualty Risk-Based Capital Newsletter Volume   Direct correspondence to: Eva Yeung, RBC Newsletters, NAIC,
+29.1. Published annually or as needed by the NAIC for state  1100 Walnut Street, Suite 1000, Kansas City, MO 64106-2197.
+insurance regulators, professionals, and consumers.          Phone: 816-783-8407. Email: eyeung@naic.org.
+
+NAIC property and casualty Risk-Based Capital Newsletter / september 2025  /6
+

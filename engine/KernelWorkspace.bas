@@ -249,7 +249,7 @@ Public Sub LoadWorkspace(workspaceName As String, Optional version As Long = 0)
         KernelExtension.LoadExtensionRegistry
         Dim loadOutputs() As Variant
         ReDim loadOutputs(0)
-        KernelTransform.RunRegisteredTransforms loadOutputs
+        KernelTransform.RunTransforms loadOutputs
         ' Refresh formula tabs so UWEX/IS/BS pick up restored data
         KernelFormulaWriter.RefreshFormulaTabs
         On Error GoTo ErrHandler
