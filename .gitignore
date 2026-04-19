@@ -9,6 +9,10 @@ RBC/RBC_Model_Requirements_v2.docx
 # Runtime outputs
 output/
 wal/
+scenarios/scenario_*.csv
+
+# Temp analysis/fix scripts (leading underscore convention)
+scripts/_*.py
 
 # Backup and temp files
 *.bak
