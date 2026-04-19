@@ -6,6 +6,46 @@
 
 ---
 
+## 2026-04-18 — RBC tab: two critical bug fixes found in Excel validation (Claude Code)
+
+**Context.** User ran Setup, spotted two issues:
+1. R3 showed `=(#REF!-C115)*C51` at col C, `#REF!` at Q2+.
+2. Corp sub-allocation (rows 103-108) had no sum-to-100% guard.
+3. Follow-up question: was R4 Dev Ratio / R5 LLAE Ratio actually wired?
+
+**Root cause 1 (R3 #REF!) — two RowIDs at the same row.**
+During the NAIC-compliance edit, `RBC_MIR_PROVISION` was inserted at row 100 after a +11 row-shift that had already landed `RBC_MIR_CRSV` at the same row 100. The bundle edit then applied a uniform +12 shift to rows ≥ 97, moving both to row 115. KernelFormula.BuildRowIDCache indexes one (PROVISION wins due to later append order), the other becomes `#REF!` on resolution. Fix: moved PROVISION to row 116 (previously empty; EQUITY at 117 unchanged).
+
+**Root cause 2 (partial-quarters R1/R2/R3/R4-growth/R5-growth/per-program-factors) — structural issue in ROWID resolution for static target cells.**
+This is the bigger bug and I should have caught it at formula-writing time.
+
+`KernelFormula.ResolveFormulaPlaceholders` resolves `{ROWID:xxx}` using the **current column** of the cell the formula lives in. For a quarterly formula at col C (Q1 Y1), `{ROWID:RBC_CHG_GOVT}` resolves to "C44" — correct, because `RBC_CHG_GOVT` is at `$C$44`. But when the formula is replicated to col D (Q2 Y1), the same ROWID resolves to "D44" — and D44 is empty because `RBC_CHG_GOVT` is a single-cell static input, not a quarterly row. Result: every formula that used `{ROWID:<static-cell>}` produced zero (or #REF!) at Q2+ quarters.
+
+This affected:
+- `RBC_R1` formula (8 static NAIC Charge refs + 6 Corp sub-alloc refs)
+- `RBC_R2` formula (2 static refs: EQ, ALT)
+- `RBC_R3` formula (1 static ref: CRED)
+- `RBC_R4` growth term (EG_FACTOR, EG_MULT_RES)
+- `RBC_R5` growth term (EG_FACTOR, EG_MULT_PREM)
+- Per-program `R4 Factor` formula (ASSM_DEV_CAP)
+- Per-program `R5 Factor` formula (ASSM_LLAE_CAP, CHG_UWEXP)
+
+My Python validation script missed this because it computed each formula directly using Python arithmetic rather than executing the RDK formula cells in Excel. The reference-model validation at 0.01% delta was computed via Python and DID NOT reflect what Excel actually produces. The validation is still correct for the ALGEBRA — the reference-model numeric match is a correctness guarantee *for the formula structure*, not for the rendered Excel behavior.
+
+**Fix applied.** Systematic replacement of `{ROWID:<static-cell-id>}` tokens with absolute `$C$<row>` references. Target cells are at stable NAIC Charges rows (44-61) and Corp sub-allocation rows (103-108). 25 formula instances detokenized across R1/R2/R3/R4/R5 aggregate formulas and the 10 Program Map per-program factor formulas × 2 factors each. `{ROWID:<mirror-id>}` tokens retained where they point to genuinely quarterly-fanning cells (mirror rows like `RBC_MIR_BOND_GOVT`, `RBC_MIR_UNP_*`, etc.). After the fix, R1-R5 should render correctly at all quarters.
+
+**Lesson for future tab design:** when a quarterly formula references a cell that is NOT quarterly (Col="numeric" = single-cell static write), use an absolute `$COL$ROW` reference, not a `{ROWID:...}` token. The token pattern is safe only when source and target are both quarterly, OR both single-cell at the same column.
+
+**Corp sub-allocation sum check (item #2) added.** New row 109: label "TOTAL Corp sub-allocation (must = 100%)" in col B + formula `=SUM($C$103:$C$108)` in col C, formatted 0.0%. Visible indicator so user can catch mis-allocation at a glance. I deliberately chose "flag the error" over "auto-normalize in R1 formula" because silent normalization hides user mistakes; loud flagging lets the user correct them explicitly. Rows ≥ 109 shifted +1 (no preserved_cells refs affected — all are at rows < 109).
+
+**Q3 clarification on R4 Dev Ratio / R5 LLAE Ratio wiring.** Both ARE wired. Specifically:
+- `R4 Dev Ratio` (LOB Library column D, `$D$12:$D$26`) appears as the DENOMINATOR in the Company Dev Ratio blend: the per-program R4 Factor formula contains `MIN($C$60, $G{r}/VLOOKUP($C{r},$B$12:$J$26,3,FALSE))`, where `VLOOKUP(...,3,FALSE)` pulls the industry Dev Ratio from col D of the library. When CompDev (col G of Program Map, defaults to same VLOOKUP) equals industry, the ratio = 1 and the blend collapses to `0.5×Ind + 0.5×1×Ind = Ind`, matching the pre-blending behavior exactly.
+- `R5 LLAE Ratio` (LOB Library column H, `$H$12:$H$26`) appears as the DENOMINATOR in the Company LLAE blend: per-program R5 Factor formula contains `MIN($C$61, $H{r}/VLOOKUP($C{r},$B$12:$J$26,7,FALSE))`, where VLOOKUP col 7 = R5 LLAE Ratio.
+
+Both values are inert by default (ratio=1 with default CompDev/CompLLAE = industry) and only affect output once user overrides CompDev or CompLLAE with actual company experience data. They are REQUIRED NAIC inputs for the blend to work when experience data is available — deleting them would break the blending feature, so they should stay.
+
+---
+
 ## 2026-04-18 — RBC Capital Model: NAIC bundle close-out (items 1, 3, 4) + R3 transaction-level deferral (Claude Code)
 
 **Context.** Following the NAIC deep-dive verification, user approved a bundle of the four remaining deferred items with the proviso that R3 transaction-level reinsurance be deferred. This entry documents the close-out of items 1 (R1 bond granularity), 3 (company-experience blending), 4 (loss-sensitive contract discount), spot-check of item 5 (LOB factor refresh), and the explicit deferral decision for item 2.
