@@ -6,6 +6,27 @@
 
 ---
 
+## 2026-04-18 — RBC tab: Provision for Reinsurance derived from CRSV x PROV_PCT (Claude Code)
+
+**Context.** After the ROWID-to-static-cell fix shipped, user reported the Provision cell still showed `#REF!` at Q1 Y1. Root cause was the one I had flagged as "integration risk" earlier and not fixed: the Provision mirror referenced `{REF:Balance Sheet!BS_PROV_REINS}`, but that RowID never existed on the Balance Sheet tab.
+
+**Fix.** Derive Provision on-tab from CRSV instead of cross-tab mirror. Matches the reference model which uses `ASSM_ProvReinsPC = 0.02` (NAIC default 2% of gross recoverables for authorized reinsurers).
+
+- Added new NAIC Charge `RBC_CHG_PROV_PCT` at row 62 (default 0.020 = 2%).
+- Shifted rows ≥ 62 by +1 (Risk Components, Capital Adequacy, mirrors, reconciliation). Preserved_cells refs unaffected (all at rows < 62).
+- Changed Provision mirror formula from `{REF:Balance Sheet!BS_PROV_REINS}` to `={ROWID:RBC_MIR_CRSV}*$C$62`.
+- `{ROWID:RBC_MIR_CRSV}` resolves per-quarter (CRSV is quarterly). `$C$62` is absolute — avoids the Q2+ bug we just fixed.
+- User can override the Provision cell directly with a specific dollar value if their actual Schedule F provision differs from the 2% default.
+
+**NAIC provision context.** NAIC Schedule F treats provisions differently by reinsurer category:
+- Authorized reinsurers: 2% of recoverable (our default)
+- Certified reinsurers (post-2011): rating-dependent, 5%-50% depending on NRSRO rating
+- Unauthorized reinsurers: starts at 20%, adjustable down based on collateral posted
+
+The 2% default is the simplest defensible floor. For a fronting arrangement with an authorized reinsurer, it's right. For anything more complex, user should either increase PROV_PCT or type a specific dollar value into the Provision cell. The full transaction-level treatment is deferred under item 2 from the bundle.
+
+---
+
 ## 2026-04-18 — RBC tab: two critical bug fixes found in Excel validation (Claude Code)
 
 **Context.** User ran Setup, spotted two issues:
