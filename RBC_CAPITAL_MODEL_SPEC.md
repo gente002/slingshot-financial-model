@@ -1,9 +1,41 @@
 # RBC Capital Model — Design Specification & Build Prompt
 
 **Date:** April 2026
-**Status:** LOCKED
+**Status:** HISTORICAL — DO NOT USE AS CURRENT TRUTH
 **Depends on:** CLEANUP sprint complete
 **Scope:** One new formula tab (RBC Capital Model) via formula_tab_config.csv. No new VBA modules.
+
+> ### ⚠ HISTORICAL DOC — SUPERSEDED
+>
+> **As of 2026-04-18**, this document describes the INITIAL design which has
+> been significantly revised for NAIC compliance. Specifically, it shows R2 as
+> "Insurance Risk" (old 5-component covariance) and R4 as a 3% "Business Risk"
+> factor on GWP growth — both of those descriptions are OUTDATED.
+>
+> **Current authoritative sources for the RBC tab:**
+> 1. `config/formula_tab_config.csv` rows tagged `"RBC Capital Model"` —
+>    the actual formulas and layout.
+> 2. `SESSION_NOTES.md` entries for 2026-04-18 under
+>    *"RBC Capital Model: NAIC compliance corrections"* and
+>    *"RBC Capital Model: Excessive Growth Charge + NWP annualization"*.
+>
+> **Current RBC calculation** uses the full NAIC 6-component covariance
+> `R0 + sqrt(R1² + R2² + R3² + R4² + R5² + Rcat²)` with per-LOB NAIC factors,
+> Loss/Premium Concentration Factor, and Excessive Growth Charge at NAIC
+> multipliers (0.45 for reserves, 0.225 for premium). Validation against
+> reference model matches within 0.0% at 2026 Q2, 2028 Q2, and 2030 Q4
+> on the first-10-programs scope.
+>
+> **Deviations from full NAIC compliance (documented in SESSION_NOTES):**
+> - R1 bond granularity: 6 buckets vs NAIC's 12+ classes
+> - R3 reinsurance: legacy 10% rule vs 2018+ transaction-level model
+> - Company-experience blending: not wired (defaults to industry factors)
+> - Loss-sensitive contract discount: not yet implemented
+> - LOB factors: currently from CAS 2018 illustrative data — verify against
+>   current NAIC 2024+ forecasting instructions before regulatory filing
+
+---
+
 
 ---
 

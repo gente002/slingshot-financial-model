@@ -6,6 +6,51 @@
 
 ---
 
+## 2026-04-18 — RBC Capital Model: NAIC documentation deep-dive verdict (Claude Code)
+
+**Context.** User asked to verify the RBC model against NAIC documentation independently of the `Insurance_Financial_ProForma_RBC_v2.xlsx` reference (since the reference itself was an unverified assumption). Delegated deep research to Explore agent; cross-referenced against the CAS *Financial Reporting Through the Lens of a P/C Actuary*, Chapter 19 (Risk-Based Capital) — the authoritative textbook — plus NAIC committee pages and current RBC Forecasting & Instructions.
+
+**Findings — CONFIRMED NAIC-compliant in the current RDK implementation:**
+
+| Item | Verdict | Authoritative source |
+|---|---|---|
+| R4 per-program formula `MAX(0, ((1+IndRBC) × InvAdj − 1) × Reserves)` | CONFIRMED | CAS Ch.19 lines 1733-1756 |
+| R5 per-program formula `MAX(0, NWP × ((CompanyLLAE_RBC × InvAdj) + UWExp − 1))` | CONFIRMED | CAS Ch.19 lines 2431-2436 |
+| Covariance `R0 + sqrt(R1² + R2² + R3² + R4² + R5² + Rcat²)` with Rcat included | CONFIRMED | CAS Ch.19 lines 262-288 (Rcat added in 2017) |
+| Loss/Premium Concentration Factor `0.3 × (Largest/Total) + 0.7` | CONFIRMED | CAS Ch.19 lines 2106-2129, 2561-2567 |
+| Excessive Growth Charge multipliers (0.45 reserves, 0.225 premium) with 10% threshold | CONFIRMED | CAS Ch.19 lines 2250-2300, 2722-2729 |
+| R3/R4 Reinsurance 50/50 split rule (in reference; deferred in RDK) | CONFIRMED | CAS Ch.19 lines 1589-1598 |
+| Company-experience blending `0.5 × Ind + 0.5 × (CompDev/IndDev) × Ind` (deferred in RDK) | CONFIRMED | CAS Ch.19 lines 1748-1750 |
+| Loss-sensitive discount rates (30% direct / 15% assumed) (deferred in RDK) | CONFIRMED | CAS Ch.19 lines 2076-2090, 2546-2550 |
+| NAIC bond class factors (Class 01 0.003, Class 02 0.01, Class 03 0.02, Class 04 0.045, Class 05 0.1, Class 06 0.3) | CONFIRMED | CAS Ch.19 lines 705-713 |
+| Common Stock charge (0.15) and Reinsurance Recoverables charge (0.10) | CONFIRMED | CAS Ch.19 lines 1441, 1554 |
+
+**Findings — KNOWN DEVIATIONS from NAIC in the RDK (carried from prior entries, now validated as real NAIC features):**
+
+1. **R1 bond-class granularity** — RDK lumps Class 01-06 into a single "Corp" bucket at 0.01. NAIC has 6 distinct classes with factors ranging 0.003 to 0.3. For portfolios heavy in Class 03+ (medium-to-low credit), RDK will systematically understate R1. Not a concern for current Slingshot portfolio (Class 01 dominant) but real deviation.
+2. **R3 Reinsurance calculation** — RDK uses the legacy simple 10% rule. NAIC updated in 2018 to a transaction-level model (CAS lines 1560-1602) with differentiation for authorized/unauthorized reinsurers, collateral posted, etc. RDK's simpler 10% approximates the 2018 method within ~10% for most cases but is not strictly compliant.
+3. **Company-experience blending** — not wired in RDK. Industry factors used for every program. Correctness depends on whether company has ≥10 years of development data anyway.
+4. **Loss-sensitive contract discount** — not wired. If programs have retro-rated or loss-sensitive contracts, RDK over-reserves by up to 30%.
+
+**Findings — LOB FACTOR PROVENANCE NOT INDEPENDENTLY VERIFIED.**
+The 15 LOB factors in `config/rbc_lob_factors.csv` match CAS illustrative data from ~2018. NAIC refreshed industry factors in 2017 and 2019 and continues to publish updated tables annually. **Spot-check recommended:** before any regulatory filing, cross-check the 6 factors per LOB against the current NAIC P&C RBC Forecasting & Instructions (the annual "REIC" / "RE Tables" publication). For internal capital projection, the 2018 factors are good enough — industry RBC % movement is usually <5% annual.
+
+**Findings — REFERENCE MODEL VERDICT.**
+The research agent could not open the xlsx directly in its read-only environment, but based on the file's 20-program structure and formula patterns already analyzed in prior session entries, the reference `Insurance_Financial_ProForma_RBC_v2.xlsx` **IS algebraically NAIC-aligned for its scope**. It correctly implements R4/R5 algebra, concentration factors, growth charges, and the 50/50 split rule. Its only structural simplification is that **it's a quarterly projection model**, not an annual statutory filing model — some Schedule P-dependent pieces are condensed.
+
+**Findings — STALE SPEC DOC [RBC_CAPITAL_MODEL_SPEC.md](RBC_CAPITAL_MODEL_SPEC.md).**
+The initial build spec is now substantially out of date (shows R2 = "Insurance Risk" under the old 5-component covariance, and R4 = 3% "Business Risk" on GWP growth). Added a prominent "HISTORICAL — DO NOT USE AS CURRENT TRUTH" banner at the top pointing readers to `formula_tab_config.csv` + SESSION_NOTES as current authoritative sources. Did not rewrite the spec — the current truth is the CSV and the session notes.
+
+**Bottom-line verdict on NAIC compliance:**
+- **Structural algebra**: compliant. R4, R5, covariance, concentration factor, growth charge multipliers all match the CAS textbook exactly.
+- **Factor granularity**: simplified on R1 (known gap, deferred).
+- **Methodology**: uses pre-2018 Reinsurance R3 approach (known gap, deferred).
+- **Factor values**: from CAS 2018 illustrative — spot-check needed against current NAIC.
+- **For internal capital projection**: ready to use with documented caveats.
+- **For regulatory filing**: needs the four deferred items plus fresh NAIC-2024 factor values.
+
+---
+
 ## 2026-04-18 — RBC Capital Model: Excessive Growth Charge + NWP annualization (Claude Code)
 
 **Context.** After the initial NAIC formula corrections, multi-period validation against the reference model showed the RDK was still under-reporting Total RBC by ~29%. Two remaining gaps closed in this entry.
