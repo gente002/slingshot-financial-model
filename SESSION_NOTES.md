@@ -6,6 +6,37 @@
 
 ---
 
+## 2026-04-19 — RBC tab: negative R3 (sign bug on CRSV mirror) (Claude Code)
+
+**Context.** User Excel-validated and found R3 showing NEGATIVE values (e.g., −77,087 at Q1 Y1). Cause traced to the RBC_MIR_CRSV mirror not normalizing the ceded-sign convention.
+
+**Root cause.** `UW Exec Summary!UWEX_CRSV` stores Ceded Loss Reserves as a NEGATIVE number per the project's PD-05 sign convention (ceded = reduction from gross, so stored with minus sign). The PRE-NAIC-compliance RBC tab's R3 formula wrapped this in `ABS()` to convert to the positive "asset value" that NAIC R3 expects. When I rewrote R3 during the NAIC-compliance edit to include the Provision deduction, I dropped the `ABS` wrapper:
+
+```
+# pre-NAIC:  =ABS({REF:UW Exec Summary!UWEX_CRSV})*0.1       -- correct
+# post-NAIC: =({ROWID:RBC_MIR_CRSV}-{ROWID:RBC_MIR_PROVISION})*$C$51  -- lost ABS
+```
+
+With CRSV stored as −786,607 in the mirror, `(CRSV − Provision) × 10%` produced `(−786,607 − (−786,607×2%)) × 0.1 = −77,088`. Negative credit charge — meaningless statutorily.
+
+**Fix.** Apply `ABS()` at the MIRROR level, not at every formula site:
+```
+RBC_MIR_CRSV: =ABS({REF:UW Exec Summary!UWEX_CRSV})
+```
+
+This is the cleaner boundary — downstream formulas (Provision, R3, any future reference) see the mirror as a positive asset value and don't need to know about the UW Exec Summary sign convention. Matches the "Source Data Mirrors = boundary block" design intent.
+
+After fix: R3 at Q1 Y1 = (786,607 − 15,732) × 0.1 = +77,088. Positive, as required by NAIC.
+
+**Why this got missed.** Three layers of miss:
+1. Python validation used the reference model's CRSV values (which are stored positive in that model's convention) — sign bug couldn't surface.
+2. The `ABS()` was in the original R3 formula; I should have preserved it during the NAIC-compliance rewrite but overlooked it.
+3. The earlier "ROWID-to-static-cell" and "Provision BS_PROV_REINS missing" fixes were made under time pressure to unblock Excel validation. Each fix was locally correct but none re-verified the sign.
+
+**Lesson to log.** When rewriting a formula that previously contained defensive wrappers (`ABS`, `IFERROR`, `IF(x<>0, ..., 0)`, etc.), the replacement must preserve those wrappers unless the surrounding logic makes them redundant. Better yet: move them to the source-boundary mirror so downstream logic doesn't need to know.
+
+---
+
 ## 2026-04-18 — RBC tab: Provision for Reinsurance derived from CRSV x PROV_PCT (Claude Code)
 
 **Context.** After the ROWID-to-static-cell fix shipped, user reported the Provision cell still showed `#REF!` at Q1 Y1. Root cause was the one I had flagged as "integration risk" earlier and not fixed: the Provision mirror referenced `{REF:Balance Sheet!BS_PROV_REINS}`, but that RowID never existed on the Balance Sheet tab.

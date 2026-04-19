@@ -1911,7 +1911,7 @@
 "RBC Capital Model","RBC_SPACER8","115","1","Spacer","","","","","","","","","","",""
 "RBC Capital Model","RBC_MIR_LIAB_HDR","116","2","Label","Liability and Equity Mirrors","","Bold","F2F2F2","","","Thin","Thin","","",""
 "RBC Capital Model","RBC_MIR_CRSV","117","2","Label","Reinsurance Recoverables (Ceded Reserves)","","","","","","","","1","Source: UW Exec Summary!UWEX_CRSV",""
-"RBC Capital Model","RBC_MIR_CRSV","117","C","Formula","={REF:UW Exec Summary!UWEX_CRSV}","#,##0","","","","","","","","",""
+"RBC Capital Model","RBC_MIR_CRSV","117","C","Formula","=ABS({REF:UW Exec Summary!UWEX_CRSV})","#,##0","","","","","","","ABS applied: UWEX_CRSV is stored negative per UW Exec Summary ceded-sign convention (PD-05). NAIC R3 expects recoverables as a positive asset value.","",""
 "RBC Capital Model","RBC_MIR_PROVISION","118","2","Label","Provision for Reinsurance","","","","","","","","1","Computed: CRSV x PROV_PCT (row 62). Default NAIC 2%.",""
 "RBC Capital Model","RBC_MIR_PROVISION","118","C","Formula","={ROWID:RBC_MIR_CRSV}*$C$62","#,##0","","","","","","","","Derived: Ceded Reserves x NAIC Provision % (default 2% for authorized reinsurers). Type a dollar value over this formula to override with a specific Schedule F provision.",""
 "RBC Capital Model","RBC_MIR_EQUITY","119","2","Label","Total Equity","","","","","","","","1","Source: Balance Sheet!BS_EQUITY",""
