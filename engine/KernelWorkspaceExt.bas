@@ -375,12 +375,18 @@ Public Function CapturePreservedCells(verDir As String) As Long
 
         Dim cell As Range
         For Each cell In rng.Cells
+            ' Skip formula cells -- they re-compute from source library on bootstrap,
+            ' so capturing their value would overwrite the formula with a stale
+            ' constant on restore. We only preserve user overrides, which by
+            ' definition are non-formula values.
+            If cell.HasFormula Then GoTo NextCell
             Dim addrStr As String: addrStr = cell.Address(False, False)
             Dim val As String: val = CStr(cell.Value)
             ' Escape embedded quotes
             val = Replace(val, """", """""")
             Print #fNum, """" & tabName & """,""" & addrStr & """,""" & val & """,""" & rowId & """,""" & note & """"
             captured = captured + 1
+NextCell:
         Next cell
 NextLine:
     Next i
