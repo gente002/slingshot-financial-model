@@ -1,0 +1,14 @@
+PROPRIETARY SOFTWARE — ALL RIGHTS RESERVED
+
+(c) 2026 Ethan Genteman. All rights reserved.
+
+This software and associated configuration files (the "Software") are the
+exclusive property of Ethan Genteman. No part of the Software may be copied,
+modified, distributed, sublicensed, or used in any form without the prior
+written consent of Ethan Genteman.
+
+Unauthorized use, reproduction, or distribution of the Software, in whole
+or in part, is strictly prohibited and may result in civil and criminal
+penalties.
+
+For licensing inquiries, contact Ethan Genteman.

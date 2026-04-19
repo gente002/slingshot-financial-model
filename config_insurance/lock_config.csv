@@ -1,0 +1,6 @@
+"Setting","Value","Description"
+"LockEnabled","TRUE","Enable model lock feature"
+"AutoLockOnRun","TRUE","Auto-engage lock after Run Model completes"
+"LockMessage","The underwriting model is locked. Please unlock to update assumptions and re-run.","MsgBox displayed when locked action attempted"
+"LockActions","RUN_MODEL,LOAD_WORKSPACE","Comma-separated actions blocked when locked"
+"LockTabs","UW Inputs,Sales Funnel","Comma-separated input tabs to sheet-protect when locked"

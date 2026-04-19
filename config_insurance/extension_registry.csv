@@ -1,0 +1,8 @@
+"ExtensionID","ModuleName","EntryPoint","HookType","SortOrder","Activated","MutatesOutputs","RequiresSeed","Description"
+"CurveLib","Ext_CurveLib","CurveLib_Execute","Standalone","100","TRUE","FALSE","FALSE","Development curve math library (CDF, interpolation, normalization)"
+"ReportGen","Ext_ReportGen","ReportGen_Execute","PostOutput","900","TRUE","FALSE","FALSE","PDF report generation from model results"
+"ReportGen_Btn","Ext_ReportGen","GenerateReport","DashboardButton","100","TRUE","FALSE","FALSE","Generate Report"
+"CurveLib_Boot","Ext_CurveLib","BuildCurveReferenceTab","PostBootstrap","100","TRUE","FALSE","FALSE","Build Curve Reference tab"
+"Workspace_Save","KernelWorkspace","SaveWorkspace","DashboardButton","200","TRUE","FALSE","FALSE","Save Workspace"
+"Workspace_Load","KernelWorkspace","LoadWorkspaceUI","DashboardButton","210","TRUE","FALSE","FALSE","Load Workspace"
+"Workspace_List","KernelWorkspace","ListWorkspaces","DashboardButton","220","TRUE","FALSE","FALSE","List Workspaces"

@@ -1,0 +1,33 @@
+{
+  "status": "COMPLETE",
+  "created": "2026-04-07T05:35:54",
+  "kernelVersion": "1.3.0",
+  "configHash": "",
+  "prngSeed": 20082441,
+  "resultsStale": false,
+  "elapsedSeconds": "14",
+  "columnCount": 64,
+  "columnHeaders": ["EntityName","CalPeriod","CalQuarter","CalYear","G_WP","G_EP","G_WComm","G_EComm","G_WFrontFee","G_EFrontFee","G_Paid","G_CaseRsv","G_CaseInc","G_IBNR","G_Unpaid","G_Ult","G_ClsCt","G_OpenCt","G_RptCt","G_UltCt","C_WP","C_EP","C_WComm","C_EComm","C_WFrontFee","C_EFrontFee","C_Paid","C_CaseRsv","C_CaseInc","C_IBNR","C_Unpaid","C_Ult","CQ_WP","CQ_EP","XC_WP","XC_EP","XO_WP","XO_EP","C_ClsCt","C_OpenCt","C_RptCt","C_UltCt","N_WP","N_EP","N_WComm","N_EComm","N_WFrontFee","N_EFrontFee","N_Paid","N_CaseRsv","N_CaseInc","N_IBNR","N_Unpaid","N_Ult","N_ClsCt","N_OpenCt","N_RptCt","N_UltCt","G_IBNRCt","G_UnclosedCt","C_IBNRCt","C_UnclosedCt","N_IBNRCt","N_UnclosedCt"],
+  "entityCount": 0,
+  "timeHorizon": 60,
+  "fingerprint": {
+    "excelVersion": "16.0",
+    "excelBuild": "19822",
+    "excelBitness": "64",
+    "osVersion": "Windows_NT",
+    "machineName": "ETHANDELL2025",
+    "userName": "gente",
+    "calculationMode": "-4105",
+    "decimalSeparator": ".",
+    "thousandsSeparator": ",",
+    "useSystemSeparators": true,
+    "precisionAsDisplayed": false
+  },
+  "files": [
+    {"name":"detail.csv","sha256":""},
+    {"name":"inputs.csv","sha256":""},
+    {"name":"errorlog.csv","sha256":""},
+    {"name":"settings.csv","sha256":""},
+    {"name":"config_hash.txt","sha256":""}
+  ]
+}

@@ -1,0 +1,6 @@
+"Setting","Value","Description"
+"CompanyName","RDK Sample Model","Company or model suite name"
+"ModelTitle","Sample Domain Model","Title shown on Dashboard"
+"Tagline","Config-driven modeling framework","Subtitle or tagline"
+"PostRunActivateTab","Dashboard","Tab to activate after RunProjections"
+"DomainTestEntry","","Entry point for domain-specific tests"

@@ -1,0 +1,6 @@
+"Setting","Value","Description"
+"LockEnabled","FALSE","Enable model lock feature"
+"AutoLockOnRun","FALSE","Auto-engage lock after Run Model completes"
+"LockMessage","The model is locked. Please unlock to proceed.","MsgBox displayed when locked action attempted"
+"LockActions","RUN_MODEL","Comma-separated actions blocked when locked"
+"LockTabs","","Comma-separated input tabs to sheet-protect when locked"

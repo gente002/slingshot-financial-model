@@ -1,0 +1,4 @@
+"TabName","RowID","ColStart","ColEnd","CheckType","GoodValue","Threshold"
+"Balance Sheet","BS_CHECK","Q","Q","NumericZero","","0.01"
+"Cash Flow Statement","CFS_CHECK","Q","Q","NumericZero","","0.01"
+"Investments","INV_CHECK_VAL","3","3","TextMatch","OK",""

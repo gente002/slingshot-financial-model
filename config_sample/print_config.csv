@@ -1,0 +1,8 @@
+"TabName","Orientation","FitToPages","PaperSize","PrintArea","HeaderLeft","HeaderCenter","HeaderRight","FooterCenter","IncludeInPDF","PrintOrder","FitToPagesTall","Margins","CenterHorizontally"
+"Summary","Landscape","1","Letter","","","RDK Model Summary","","Page &P of &N","TRUE","1","1","Narrow","TRUE"
+"Detail","Portrait","1","Letter","","","Detail Output","&D","Page &P of &N","TRUE","2","","Narrow","TRUE"
+"QuarterlySummary","Landscape","1","Letter","","","Quarterly Summary","","Page &P of &N","TRUE","3","1","Narrow","TRUE"
+"FinancialSummary","Portrait","1","Letter","","","Financial Summary","","Page &P of &N","TRUE","4","1","Normal","TRUE"
+"Exhibits","Landscape","1","Letter","","","Exhibits","","Page &P of &N","TRUE","5","1","Narrow","TRUE"
+"Charts","Landscape","1","Letter","","","Charts","","Page &P of &N","TRUE","6","1","Narrow","FALSE"
+"ProveIt","Portrait","1","Letter","","","Audit Verification","","Page &P of &N","TRUE","7","1","Normal","TRUE"

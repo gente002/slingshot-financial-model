@@ -1,0 +1,6 @@
+"Setting","Value","Description"
+"DeterministicMode","AUTO","AUTO=use seed if provided, random if not. TRUE=always require seed. FALSE=always random."
+"DefaultSeed","0","Default PRNG seed. 0 = auto-generate."
+"FloatPrecision","6","Decimal places for CSV numeric output."
+"WALEnabled","TRUE","Whether to write WAL entries."
+"WALRetentionDays","30","Days to keep WAL entries before purge."

@@ -1,0 +1,6 @@
+"ReportID","ReportName","Description","Tabs","Format","Orientation","IncludeCoverPage"
+"INVESTOR_DECK","Investor Deck","Full financial model for board/investor presentation","UW Exec Summary,Revenue Summary,Expense Summary,Income Statement,Balance Sheet,Cash Flow Statement","PDF","Landscape","TRUE"
+"UW_DETAIL","UW Program Detail","Detailed per-program underwriting waterfall with loss development","UW Program Detail","PDF","Landscape","FALSE"
+"EXECUTIVE_SUMMARY","Executive Summary","High-level P&L and balance sheet","UW Exec Summary,Income Statement,Balance Sheet","PDF","Landscape","TRUE"
+"FULL_MODEL","Full Model Export","All visible tabs for archival","*","PDF","Landscape","TRUE"
+"ASSUMPTIONS_ONLY","Assumptions Package","Input tabs for review/approval","Assumptions,UW Inputs,Capital Activity,Investments,Staffing Expense,Other Expense Detail,Other Revenue Detail,Sales Funnel","PDF","Portrait","FALSE"

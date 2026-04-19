@@ -1,0 +1,48 @@
+# ============================================================================
+# RDK / Slingshot Financial Model .gitignore
+# ============================================================================
+
+# Private correspondence / non-repository content
+*.eml
+RBC/RBC_Model_Requirements_v2.docx
+
+# Runtime outputs
+output/
+wal/
+
+# Backup and temp files
+*.bak
+*.tmp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python cache / tooling artifacts
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Excel / Office lock files
+~$*.xlsx
+~$*.xlsm
+~$*.docx
+*.xlk
+
+# Workspace binary snapshots (large, regenerable)
+# Keep the CSV artifacts and manifest.json for audit; skip the full xlsm copy
+workspaces/*/v*/workspace.xlsm
+
+# Engine compiled artifacts (if any)
+engine/*.frx
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log

@@ -1,0 +1,4 @@
+ChartID,ChartName,ChartType,MetricName,GroupBy,Width,Height,Enabled
+CHT-001,Revenue Trend,Line,Revenue,Entity,500,300,TRUE
+CHT-002,COGS by Entity,Bar,COGS,Entity,500,300,TRUE
+CHT-003,Gross Profit Trend,Line,GrossProfit,Entity,500,300,TRUE

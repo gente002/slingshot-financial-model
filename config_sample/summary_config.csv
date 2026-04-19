@@ -1,0 +1,5 @@
+"MetricName","SectionName","SortOrder","Format","ShowInSummary"
+"Revenue","Revenue",1,"#,##0","TRUE"
+"COGS","Expenses",1,"#,##0","TRUE"
+"GrossProfit","Profit",1,"#,##0","TRUE"
+"GPMargin","Margins",1,"0.0%","TRUE"

@@ -1,0 +1,4 @@
+"Section","ParamName","Row","DataType","Default","Validation","Required","Tooltip"
+"Global Assumptions","FederalTaxRate","3","Pct","0.21","Range(0,0.5)","Y","Federal corporate income tax rate"
+"Global Assumptions","ScenarioName","4","Text","Base","NotBlank","Y","Active scenario label for exports and snapshots"
+"Global Assumptions","ActiveProgramCount","5","Number","10","Range(0,50)","Y","Number of active programs for fee/expense scaling (no re-run needed)"

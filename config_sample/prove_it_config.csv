@@ -1,0 +1,4 @@
+"CheckID","CheckType","CheckName","MetricA","MetricB","MetricC","Operator","Tolerance","Enabled"
+"PI-001","Identity","GrossProfit = Revenue - COGS","GrossProfit","Revenue","COGS","-","0.000001","TRUE"
+"PI-002","Reconcile","GPMargin = GrossProfit / Revenue","GPMargin","GrossProfit","Revenue","/","0.000001","TRUE"
+"PI-003","Accumulate","Total Revenue sums correctly","Revenue","","","SUM","0.000001","TRUE"

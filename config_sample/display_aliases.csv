@@ -1,0 +1,8 @@
+"InternalID","DisplayName","Category","Description"
+"REVE","Revenue","Metric","Total revenue"
+"COGS","Cost of Goods Sold","Metric","Direct costs"
+"OPEX","Operating Expenses","Metric","Operating expenses"
+"GP","Gross Profit","Metric","Revenue minus COGS"
+"GPM","Gross Profit Margin","Metric","GP as percentage of revenue"
+"Entity","Product","Dimension","Product name"
+"Period","Month","Dimension","Monthly time period"

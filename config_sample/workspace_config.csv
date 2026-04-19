@@ -1,0 +1,5 @@
+"Setting","Value","Description"
+"WorkspacesEnabled","TRUE","Enable workspace save/load functionality"
+"AutoSaveOnRun","FALSE","Auto-save workspace before each run"
+"MaxVersionsPerWorkspace","50","Maximum saved versions per workspace"
+"DefaultWorkspaceName","Main","Default workspace name for new models"

@@ -1,0 +1,6 @@
+"TabName","Address","RowID","Note"
+"RBC Capital Model","$C$5:$C$7","RBC_MODEL_INPUTS","Target RBC ratio, Catastrophe loss, Non-tabular discount"
+"RBC Capital Model","$C$12:$E$26","RBC_LOB_R4_INPUTS","R4 decomposition inputs (IndRBC, DevRatio, InvAdj) for 15 LOBs"
+"RBC Capital Model","$G$12:$I$26","RBC_LOB_R5_INPUTS","R5 decomposition inputs (IndLLAE, Ratio, InvAdj) for 15 LOBs"
+"RBC Capital Model","$C$31:$C$40","RBC_PROGRAM_LOB_MAP","Program-to-LOB assignments"
+"RBC Capital Model","$C$44:$C$55","RBC_NAIC_CHARGES","NAIC Risk Charge Factors (incl UWExp + growth inputs)"

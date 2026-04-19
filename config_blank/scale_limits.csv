@@ -1,0 +1,7 @@
+"Setting","Value","Description"
+"MaxDetailRows","100000","Maximum rows to write to Detail tab. Beyond this, CSV-only mode."
+"MaxCsvRows","1000000","Maximum rows per CSV file. Beyond this, split into parts."
+"MaxEntities","100","Maximum entities supported."
+"MaxPeriods","1200","Maximum periods supported."
+"CsvOnlyThreshold","50000","Row count above which Detail tab is skipped (CSV only)."
+"LargeModelThresholdSec","60","Seconds above which a warning is shown before auto-run on save."

@@ -1,0 +1,8 @@
+"Section","ParamName","Row","DataType","Default","Validation","Required","Tooltip"
+"Attributes","EntityName","6","Text","","NotBlank","Y","Name of the entity"
+"Attributes","StartDate","7","Date","2026-01-01","IsDate","Y","Model start date"
+"Attributes","TermMonths","8","Integer","12","Range(1,600)","Y","Number of periods to project"
+"Assumptions","Units","12","Integer","100","Range(0,1000000)","Y","Units sold per period (base)"
+"Assumptions","UnitPrice","13","Currency","250.00","Range(0,1000000)","Y","Price per unit (base)"
+"Assumptions","MonthlyGrowth","14","Pct","0.009","Range(-0.5,0.5)","N","Monthly compound growth rate"
+"Assumptions","COGSPct","15","Pct","0.60","Range(0,1)","Y","COGS as percentage of Revenue"

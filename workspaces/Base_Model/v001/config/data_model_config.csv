@@ -1,0 +1,6 @@
+"Setting","Value"
+"PowerPivotEnabled","AUTO"
+"FactTableSource","Detail"
+"DimEntitySource","UW Inputs"
+"DimTimeGranularity","Monthly"
+"RefreshOnRun","TRUE"

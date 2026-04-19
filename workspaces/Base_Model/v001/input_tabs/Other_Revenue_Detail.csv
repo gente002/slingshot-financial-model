@@ -1,0 +1,40 @@
+ORD_HEADER,Other Revenue Detail,,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_BASIS,Management Projections,,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_SPACER0,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_SEC_PARAM,Revenue Model Parameters,,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_AVG_PREMIUM,Average Premium per Policy,50000,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_SW_PLATFORM_RATE,Platform Subscription ($/program/year),25000,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_SW_API_RATE,API / Transaction Fee ($/policy),15,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_SW_ANALYTICS_RATE,Analytics Products ($/program/year),0,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_FEE_CARRIER_RATE,Carrier Access Fee Rate (% of GWP),0,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_FEE_OVERSIGHT_RATE,Oversight Fee ($/program/year),0,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_FEE_POLICY_RATE,Policy Fee ($/policy),0,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_SPACER1,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_SEC_SW,Technology Revenue,Q1 Y1,Q2 Y1,Q3 Y1,Q4 Y1,Y1 Total,Q1 Y2,Q2 Y2,Q3 Y2,Q4 Y2,Y2 Total,Q1 Y3,Q2 Y3,Q3 Y3,Q4 Y3,Y3 Total,Q1 Y4,Q2 Y4,Q3 Y4,Q4 Y4,Y4 Total,Q1 Y5,Q2 Y5,Q3 Y5,Q4 Y5,Y5 Total,Y1-Y5 Total
+ORD_SW_PLATFORM,Platform Subscriptions,0,0,43750,43750,87500,62500,62500,56250,56250,237500,62500,62500,56250,56250,237500,62500,62500,56250,56250,237500,0,0,0,0,0,800000
+ORD_SW_API,API & Transaction Fees,0,0,615.375,494.625,1110,1816.7625,1449.75,1696.2375,1667.25,6630,1566.6375,3756.481875,3275.23125,3619.471875,12217.8225,3453.92325,3314.253525,6972.14757375,6566.1261135,20306.45046225,7337.33692995,7427.52779094,7297.104630378,13593.6343798911,35655.6037311591,75919.8766934091
+ORD_SW_IMPLEMENT,Implementation Fees,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_SW_ANALYTICS,Analytics & Data Products,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_SW_LICENSE,Licensing & White-Label,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_SW_CUSTOM,Custom Development,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_SW_OTHER,Other Technology Revenue,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_SW_TOTAL,Total Technology Revenue,0,0,44365.375,44244.625,88610,64316.7625,63949.75,57946.2375,57917.25,244130,64066.6375,66256.481875,59525.23125,59869.471875,249717.8225,65953.92325,65814.253525,63222.14757375,62816.1261135,257806.45046225,7337.33692995,7427.52779094,7297.104630378,13593.6343798911,35655.6037311591,875919.876693409
+ORD_SPACER2,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_SEC_FEE,Fee Income,,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_FEE_CARRIER,Carrier Access / Program Fee,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_FEE_OVERSIGHT,Oversight & Monitoring,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_FEE_ONBOARD,Program Onboarding (one-time),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_FEE_POLICY,Policy & Binding Fees,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_FEE_ADMIN,Administrative Fees,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_FEE_OTHER,Other Fee Income,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_FEE_TOTAL,Total Fee Income,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_SPACER3,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_SEC_CON,Consulting Revenue,,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_CON_ACT,Actuarial Consulting,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_CON_RISK,Risk Management,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_CON_REG,Regulatory / Compliance,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_CON_OTHER,Other Consulting,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_CON_TOTAL,Total Consulting Revenue,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ORD_SPACER4,,,,,,,,,,,,,,,,,,,,,,,,,,,
+ORD_TOTAL,Total Other Revenue,0,0,44365.375,44244.625,88610,64316.7625,63949.75,57946.2375,57917.25,244130,64066.6375,66256.481875,59525.23125,59869.471875,249717.8225,65953.92325,65814.253525,63222.14757375,62816.1261135,257806.45046225,7337.33692995,7427.52779094,7297.104630378,13593.6343798911,35655.6037311591,875919.876693409
+,,,,,,,,,,,,,,,,,,,,,,,,,,,

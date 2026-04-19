@@ -1,0 +1,3 @@
+"ExhibitID","ExhibitName","MetricList","GroupBy","IncludeTotal","Format","Enabled"
+"EXH-001","Income Statement","Revenue,COGS,GrossProfit,GPMargin","Period","TRUE","#,##0","TRUE"
+"EXH-002","Entity Comparison","Revenue,COGS,GrossProfit","Entity","TRUE","#,##0","TRUE"

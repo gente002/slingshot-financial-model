@@ -1,0 +1,2 @@
+"PivotID","PivotName","SourceTable","RowField","ColField","ValueField","AggFunction","Enabled"
+"PVT-001","Revenue by Entity","FactDetail","EntityName","Period","Revenue","Sum","TRUE"

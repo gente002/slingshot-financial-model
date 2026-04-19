@@ -1,0 +1,2 @@
+"Setting","Value","Description"
+"DomainModule","SampleDomainEngine","VBA module name implementing Initialize/Validate/Reset/Execute"

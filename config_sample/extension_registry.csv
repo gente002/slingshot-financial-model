@@ -1,0 +1,3 @@
+"ExtensionID","ModuleName","EntryPoint","HookType","SortOrder","Activated","MutatesOutputs","RequiresSeed","Description"
+"CurveLib","Ext_CurveLib","CurveLib_Execute","Standalone","100","TRUE","FALSE","FALSE","Development curve math library (CDF, interpolation, normalization)"
+"ReportGen","Ext_ReportGen","ReportGen_Execute","PostOutput","900","TRUE","FALSE","FALSE","PDF report generation from model results"

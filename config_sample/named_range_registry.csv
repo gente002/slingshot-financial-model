@@ -1,0 +1,5 @@
+"RangeName","TabName","RowID","CellAddress","RangeType","Description"
+"QS_Q_Revenue","QuarterlySummary","QS_REVE_TOTAL","","Quarterly","Total Revenue quarterly data"
+"QS_Q_GrossProfit","QuarterlySummary","QS_GROS_TOTAL","","Quarterly","Total Gross Profit quarterly data"
+"QS_R_COGS","QuarterlySummary","QS_COGS_TOTAL","","Row","Total COGS full row range"
+"QS_GPM_Cell","QuarterlySummary","QS_GPMA_TOTAL","","Single","GP Margin total Q1 cell"
