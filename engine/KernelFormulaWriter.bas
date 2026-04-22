@@ -126,12 +126,45 @@ Public Sub CreateFormulaTabs(Optional silent As Boolean = False)
     ' GLOBAL pre-write: write ALL RowIDs across ALL tabs before any formula
     ' resolution. This ensures cross-tab {REF:} references can find RowIDs
     ' on tabs that haven't been processed yet (BUG-182).
+    '
+    ' BUG-191: On Output-category tabs in preserve mode, stale legacy cells
+    ' (from a prior CSV layout) survive because preserve mode skips
+    ' ClearContents. Fix: always clear Output tabs, but first capture their
+    ' preserved-cells values to an in-memory dict and restore at the end of
+    ' the build. Input tabs keep their existing preserve-mode behavior
+    ' (user-entered data preserved without capture/restore).
+    Dim preservedCellDicts As Object
+    Set preservedCellDicts = CreateObject("Scripting.Dictionary")
     Dim preTabIdx As Long
     For preTabIdx = 1 To tabCount
         Dim preTabName As String: preTabName = tabNames(preTabIdx)
         Dim preWs As Worksheet
         Set preWs = EnsureSheetFormula(preTabName)
-        If Not m_preserveOnRefresh Then preWs.Cells.ClearContents
+
+        ' BUG-191: determine if this is an Output-category tab
+        Dim preTabCategory As String
+        preTabCategory = KernelWorkspaceExt.GetTabCategory(preTabName)
+        Dim preIsOutputTab As Boolean
+        preIsOutputTab = (StrComp(preTabCategory, "Output", vbTextCompare) = 0)
+
+        ' BUG-191: if in preserve mode AND this is an Output tab, capture
+        ' preserved-cells values to memory BEFORE clearing.
+        If m_preserveOnRefresh And preIsOutputTab Then
+            Dim preCapDict As Object
+            Set preCapDict = KernelWorkspaceExt.CapturePreservedCellsInMemory(preTabName)
+            If Not preCapDict Is Nothing Then
+                If preCapDict.Count > 0 Then
+                    preservedCellDicts(preTabName) = preCapDict
+                End If
+            End If
+        End If
+
+        ' BUG-191: clear if NOT in preserve mode, OR if this is an Output
+        ' tab in preserve mode (we captured user overrides above).
+        If (Not m_preserveOnRefresh) Or preIsOutputTab Then
+            preWs.Cells.ClearContents
+        End If
+
         Dim preRows As Variant: preRows = tabIndex(preTabName)
         Dim preTri As Long
         For preTri = LBound(preRows) To UBound(preRows)
@@ -685,6 +718,28 @@ NextCfgRow:
         ActiveWindow.FreezePanes = False
         ActiveWindow.FreezePanes = True
     Next tabIdx
+
+    ' BUG-191: restore preserved-cells values for Output tabs that had
+    ' their user-overrides captured to memory before the clear. This
+    ' writes captured values AFTER the formula-writing pass so the user
+    ' overrides overwrite the seeded formula defaults.
+    If Not preservedCellDicts Is Nothing Then
+        If preservedCellDicts.Count > 0 Then
+            Dim restTabKey As Variant
+            Dim restTotal As Long: restTotal = 0
+            For Each restTabKey In preservedCellDicts.Keys
+                Dim restDict As Object
+                Set restDict = preservedCellDicts(restTabKey)
+                If Not restDict Is Nothing Then
+                    KernelWorkspaceExt.RestorePreservedCellsInMemory CStr(restTabKey), restDict
+                    restTotal = restTotal + restDict.Count
+                End If
+            Next restTabKey
+            KernelConfig.LogError SEV_INFO, "KernelFormula", "I-803", _
+                "BUG-191 restore: " & restTotal & " preserved cell value(s) restored on " & _
+                preservedCellDicts.Count & " Output tab(s).", ""
+        End If
+    End If
 
     Application.ScreenUpdating = savedScreenUpdating
 
