@@ -61,50 +61,36 @@ End Sub
 ' =============================================================================
 ' FindSectionStart
 ' Returns the cached row number for a section marker, or 0 if not found.
+' BUG-194: Lazy-builds the section cache on first call. Prior implementation
+' fell through to a linear scan when the cache was not yet built, which caused
+' catastrophic slowdowns when UDFs (e.g. Ext_CurveLib.CurveRefPct) fired
+' before Bootstrap had run BuildSectionCache. Building the cache once makes
+' all subsequent lookups O(1) dictionary hits.
 ' =============================================================================
 Public Function FindSectionStart(ws As Worksheet, marker As String) As Long
-    ' Use cache if available
-    If m_sectionCacheBuilt And Not m_sectionCache Is Nothing Then
+    ' BUG-194: Lazy-build cache on first call so UDF callers get O(1) after the
+    ' first hit instead of re-scanning the Config sheet on every invocation.
+    If Not m_sectionCacheBuilt Then BuildSectionCache ws
+
+    If Not m_sectionCache Is Nothing Then
         If m_sectionCache.Exists(marker) Then
             FindSectionStart = m_sectionCache(marker)
             Exit Function
         End If
-        FindSectionStart = 0
-        Exit Function
     End If
-
-    ' Fallback: linear scan (first call before cache is built)
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).row
-    If lastRow < 1 Then lastRow = 1
-    Dim scanRow As Long
-    For scanRow = 1 To lastRow
-        ' TD-05: Strip BOM from cell value before comparing
-        If Trim(StripBOM(CStr(ws.Cells(scanRow, 1).Value))) = marker Then
-            FindSectionStart = scanRow
-            Exit Function
-        End If
-    Next scanRow
     FindSectionStart = 0
 End Function
 
 
 ' =============================================================================
 ' FindConfigSection (AP-45 fallback helper)
-' Scans column A for "=== SECTION_NAME ===" marker. Returns row number or 0.
+' Looks up row of "=== SECTION_NAME ===" marker. Returns row number or 0.
+' BUG-194: Now delegates to FindSectionStart so it reuses the section cache.
+' Prior implementation did a fresh linear scan on every call, causing UDF
+' callers (CurveRefPct et al.) to re-scan thousands of Config rows per cell.
 ' =============================================================================
 Public Function FindConfigSection(ws As Worksheet, sectionName As String) As Long
-    Dim r As Long
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).row
-    For r = 1 To lastRow
-        ' TD-05: Strip BOM from cell value before comparing
-        If InStr(1, StripBOM(CStr(ws.Cells(r, 1).Value)), "=== " & sectionName & " ===", vbTextCompare) > 0 Then
-            FindConfigSection = r
-            Exit Function
-        End If
-    Next r
-    FindConfigSection = 0
+    FindConfigSection = FindSectionStart(ws, "=== " & sectionName & " ===")
 End Function
 
 
