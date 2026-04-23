@@ -737,6 +737,11 @@ Public Sub RefreshFormulaTabs()
     ApplyHealthFormatting
     ApplyInputValidation
 
+    ' BUG-191 defensive: sweep for stale volatile formulas that preserve-mode
+    ' left in place. Replaces known-stale INDIRECT patterns with current
+    ' non-volatile equivalents from config.
+    ScrubStaleVolatileFormulas
+
     ' Recalculation deferred to Cleanup block in KernelEngine.RunProjectionsEx
     ' (xlCalculationAutomatic triggers a single recalc). Standalone UI path
     ' uses RefreshFormulaTabsUI which retains its own CalculateFull call.
@@ -757,8 +762,61 @@ Public Sub RefreshFormulaTabsUI()
     KernelFormula.CreateNamedRanges
     ApplyHealthFormatting
     ApplyInputValidation
+    ScrubStaleVolatileFormulas
     Application.CalculateFull
 End Sub
+
+
+' =============================================================================
+' ScrubStaleVolatileFormulas
+' Defensive sweep: replaces known-stale volatile formulas with the current
+' non-volatile equivalents. Handles the BUG-191 scenario where RefreshFormulaTabs
+' (preserve mode) fails to overwrite a cell whose config value has changed.
+'
+' Known patterns (append new ones as they emerge):
+'   1. UW Exec Summary row 50 (UWEX_PROG_COUNT):
+'        Old: =COUNTIF(INDIRECT("'UW Inputs'!"&...),">0")   [volatile, slow save]
+'        New: ='Assumptions'!$C$5                           [non-volatile]
+' =============================================================================
+Public Function ScrubStaleVolatileFormulas() As Long
+    Dim scrubbed As Long: scrubbed = 0
+    On Error Resume Next
+
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("UW Exec Summary")
+    If ws Is Nothing Then
+        ScrubStaleVolatileFormulas = 0
+        Exit Function
+    End If
+
+    Dim lastCol As Long
+    lastCol = ws.Cells(50, ws.Columns.Count).End(xlToLeft).Column
+    If lastCol < 3 Then lastCol = 60
+
+    Dim c As Long
+    Dim cell As Range
+    Dim f As String
+    For c = 3 To lastCol
+        Set cell = ws.Cells(50, c)
+        If cell.HasFormula Then
+            f = cell.Formula
+            If InStr(1, f, "INDIRECT", vbTextCompare) > 0 And _
+               InStr(1, f, "'UW Inputs'", vbTextCompare) > 0 Then
+                cell.Formula = "='Assumptions'!$C$5"
+                scrubbed = scrubbed + 1
+            End If
+        End If
+    Next c
+
+    If scrubbed > 0 Then
+        KernelConfig.LogError SEV_INFO, "KernelFormulaWriter", "I-804", _
+            "ScrubStaleVolatileFormulas: replaced " & scrubbed & _
+            " stale INDIRECT formula(s) on UW Exec Summary row 50 with " & _
+            "='Assumptions'!$C$5 (BUG-191 defensive).", ""
+    End If
+
+    ScrubStaleVolatileFormulas = scrubbed
+End Function
 
 
 
