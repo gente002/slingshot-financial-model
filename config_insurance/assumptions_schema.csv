@@ -961,7 +961,7 @@
 "Income Statement","IS_OTHINC","$Y$18","Income Statement","Number","0",""
 "Income Statement","IS_OTHINC","$Z$18","Income Statement","Number","0",""
 "Income Statement","IS_OTHINC","$AA$18","Income Statement","Number","0",""
-"RBC Capital Model","RBC_TARGET","$C$5","RBC Capital Model","Pct","3.000",""
+"RBC Capital Model","RBC_TARGET","$C$5","RBC Capital Model","Number","3.000",""
 "RBC Capital Model","RBC_RCAT_INPUT","$C$6","RBC Capital Model","Number","0",""
 "RBC Capital Model","RBC_DISC","$C$7","RBC Capital Model","Number","0",""
 "RBC Capital Model","RBC_LOB_SPLIAB","$C$12","RBC Capital Model","Text","0.401",""

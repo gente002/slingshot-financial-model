@@ -27,6 +27,14 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA_START_COL = 3   # col C
 COLS_PER_YEAR = 5    # Q1, Q2, Q3, Q4, YearTotal
 
+# DataType overrides for cells whose Excel format is "%" (for user-friendly
+# display) but whose values are semantically ratios/multiples, not bounded
+# probabilities. Validator's Pct range check would otherwise flag these.
+# Key: (TabName, RowID) -> DataType
+DATATYPE_OVERRIDES = {
+    ("RBC Capital Model", "RBC_TARGET"): "Number",   # 300% target ratio
+}
+
 
 def col_letter(n: int) -> str:
     s = ""
@@ -91,13 +99,18 @@ def generate(config_dir: Path) -> list:
             except ValueError:
                 col_num = None
 
+            # Apply overrides for cells whose inferred DataType is wrong for
+            # semantic reasons (e.g. Excel's % format but value is a multiple)
+            override_key = (row["TabName"], row["RowID"])
+            effective_dt = DATATYPE_OVERRIDES.get(override_key, dt)
+
             if col_num is not None:
                 rows.append({
                     "TabName": row["TabName"],
                     "AssumptionID": row["RowID"],
                     "Address": f"${col_letter(col_num)}${row['Row']}",
                     "Section": row["TabName"],
-                    "DataType": dt,
+                    "DataType": effective_dt,
                     "DefaultValue": row["Content"],
                     "Description": row.get("Comment", ""),
                 })
@@ -111,7 +124,7 @@ def generate(config_dir: Path) -> list:
                             "AssumptionID": row["RowID"],
                             "Address": f"${col_letter(c)}${row['Row']}",
                             "Section": row["TabName"],
-                            "DataType": dt,
+                            "DataType": effective_dt,
                             "DefaultValue": row["Content"],
                             "Description": row.get("Comment", ""),
                         })
