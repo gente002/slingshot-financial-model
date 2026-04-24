@@ -1,0 +1,3 @@
+"ScenarioName","Description","Source","Created","Author"
+"Base","Baseline scenario extracted from Workingv2 (current working set of assumptions including per-program cede percentages, RBC overrides, staffing, investments)","Workingv2_InsuranceNewCo_Financial_Model.xlsm","2026-04-24","gente002"
+"LowNet","Low-net-retention sensitivity (high cede percentages; reduces risk and capital charges). Differs from Base in 33 cells, all on UW Inputs tab (per-program cede %).","Workingv3_LowNet_InsuranceNewCo_Financial_Model.xlsm","2026-04-24","gente002"

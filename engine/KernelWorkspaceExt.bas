@@ -778,3 +778,51 @@ Private Sub DeleteFolderRecursive(path As String)
     If fso.FolderExists(path) Then fso.DeleteFolder path, True
     Set fso = Nothing
 End Sub
+
+' =============================================================================
+' ArchiveWorkbookNow (Dashboard button "Archive Snapshot")
+' Saves a timestamped .xlsm copy of the current workbook to <workbookDir>\Archive' Never overwrites the live workbook. Safe to click after every significant edit.
+' Filename: <basename>_YYYYMMDD_HHNNSS.xlsm
+' =============================================================================
+Public Sub ArchiveWorkbookNow()
+    On Error GoTo ErrHandler
+    If ThisWorkbook.Path = "" Then
+        MsgBox "Save the workbook once (File > Save As) before archiving.", vbExclamation
+        Exit Sub
+    End If
+
+    Dim archiveDir As String
+    archiveDir = ThisWorkbook.Path & Application.PathSeparator & "Archive"
+    If Dir(archiveDir, vbDirectory) = "" Then MkDir archiveDir
+
+    Dim base As String
+    base = ThisWorkbook.Name
+    Dim ext As String
+    If InStrRev(base, ".") > 0 Then
+        ext = Mid(base, InStrRev(base, "."))
+        base = Left(base, InStrRev(base, ".") - 1)
+    Else
+        ext = ".xlsm"
+    End If
+
+    Dim ts As String
+    ts = Format(Now, "yyyymmdd_hhnnss")
+    Dim target As String
+    target = archiveDir & Application.PathSeparator & base & "_" & ts & ext
+
+    Application.ScreenUpdating = False
+    ThisWorkbook.SaveCopyAs target
+    Application.ScreenUpdating = True
+
+    KernelConfig.LogError SEV_INFO, "KernelWorkspaceExt", "I-820", _
+        "Archived workbook snapshot: " & target, ""
+
+    MsgBox "Archived:" & vbCrLf & target, vbInformation, "Archive Snapshot"
+    Exit Sub
+
+ErrHandler:
+    Application.ScreenUpdating = True
+    MsgBox "Archive failed: " & Err.Description & vbCrLf & vbCrLf & _
+           "MANUAL BYPASS: Use File > Save As in Excel to copy the workbook manually.", _
+           vbCritical, "Archive Snapshot"
+End Sub
