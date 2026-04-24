@@ -29,7 +29,3 @@
 "Quarterly Summary","Kernel","Output","N","Hidden","57","Quarterly aggregation of monthly Detail for FM bridge","TRUE","Data","FALSE","","FALSE","FALSE","NONE"
 "Error Log","Kernel","System","N","Hidden","80","Error and event log","FALSE","","FALSE","","FALSE","FALSE","NONE"
 "Test Results","Kernel","System","N","Hidden","81","Test runner output (Phase 3+)","FALSE","","FALSE","","FALSE","FALSE","NONE"
-"Exhibit 1","Domain","Output","N","Visible","1.1","Exhibit 1 -- executive summary view","FALSE","","FALSE","C0504D","FALSE","FALSE","NONE"
-"Exhibit 2","Domain","Output","N","Visible","1.2","Exhibit 2 -- executive summary view","FALSE","","FALSE","C0504D","FALSE","FALSE","NONE"
-"Exhibit 3","Domain","Output","N","Visible","1.3","Exhibit 3 -- executive summary view","FALSE","","FALSE","C0504D","FALSE","FALSE","NONE"
-"Exhibit 4","Domain","Output","N","Visible","1.4","Exhibit 4 -- executive summary view","FALSE","","FALSE","C0504D","FALSE","FALSE","NONE"

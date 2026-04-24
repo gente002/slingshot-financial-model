@@ -1083,7 +1083,6 @@
 "RBC Capital Model","RBC_CHG_ALT","$C$50","RBC Capital Model","Text","0.2",""
 "RBC Capital Model","RBC_CHG_CRED","$C$51","RBC Capital Model","Text","0.1",""
 "RBC Capital Model","RBC_CHG_UWEXP","$C$52","RBC Capital Model","Text","0.357",""
-"RBC Capital Model","RBC_CHG_EG_FACTOR","$C$53","RBC Capital Model","Text","0.000",""
 "RBC Capital Model","RBC_CHG_EG_MULT_RES","$C$54","RBC Capital Model","Text","0.45",""
 "RBC Capital Model","RBC_CHG_EG_MULT_PREM","$C$55","RBC Capital Model","Text","0.225",""
 "RBC Capital Model","RBC_CHG_CLASS03","$C$56","RBC Capital Model","Text","0.020",""
