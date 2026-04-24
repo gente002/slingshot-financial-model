@@ -145,6 +145,50 @@ def write_schema(rows: list, out_path: Path) -> None:
             w.writerow(r)
 
 
+def write_meta(cfg_dir: Path, rows: list, num_years: int) -> None:
+    """Write assumptions_schema.meta.csv with a fingerprint of the inputs.
+
+    Drift detection: at import time, VBA reloads the current values of the
+    source inputs and compares against the stored fingerprint. Mismatch
+    means the schema is stale relative to the current config -- the user
+    should re-run this script before importing.
+    """
+    import datetime
+
+    # Fingerprint components: count of Input rows in formula_tab_config,
+    # count of rows in input_schema, and numYears from granularity.
+    input_count = 0
+    replicator_count = 0
+    with (cfg_dir / "formula_tab_config.csv").open(newline="") as f:
+        for row in csv.DictReader(f):
+            if row["CellType"] == "Input":
+                input_count += 1
+                if row["Col"] == "C":
+                    replicator_count += 1
+
+    global_count = 0
+    with (cfg_dir / "input_schema.csv").open(newline="") as f:
+        for _ in csv.DictReader(f):
+            global_count += 1
+
+    meta = [
+        {"Key": "GeneratedAt",         "Value": datetime.datetime.now().isoformat(timespec="seconds")},
+        {"Key": "NumYears",            "Value": str(num_years)},
+        {"Key": "InputRowCount",       "Value": str(input_count)},
+        {"Key": "ReplicatorRowCount",  "Value": str(replicator_count)},
+        {"Key": "GlobalRowCount",      "Value": str(global_count)},
+        {"Key": "SchemaRowCount",      "Value": str(len(rows))},
+    ]
+
+    out_path = cfg_dir / "assumptions_schema.meta.csv"
+    with out_path.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["Key", "Value"], quoting=csv.QUOTE_ALL)
+        w.writeheader()
+        for r in meta:
+            w.writerow(r)
+    print(f"  meta: {out_path}")
+
+
 def main() -> int:
     ok = True
     for cfg_dir_name in ("config", "config_insurance"):
@@ -162,6 +206,9 @@ def main() -> int:
         out = cfg_dir / "assumptions_schema.csv"
         write_schema(rows, out)
         print(f"  -> {out}")
+
+        num_years = read_horizon_years(cfg_dir / "granularity_config.csv")
+        write_meta(cfg_dir, rows, num_years)
 
         tabs = Counter(r["TabName"] for r in rows)
         for tab, n in tabs.most_common():

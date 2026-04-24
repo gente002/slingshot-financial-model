@@ -37,7 +37,13 @@ Option Explicit
 Private Const MODULE_NAME As String = "KernelScenarioIO"
 Private Const SCENARIO_FILE_EXT As String = ".csv"
 Private Const SCHEMA_FILE As String = "assumptions_schema.csv"
+Private Const SCHEMA_META_FILE As String = "assumptions_schema.meta.csv"
 Private Const SCENARIOS_SUBDIR As String = "scenarios"
+
+' Validator thresholds (tunable)
+Private Const PCT_MIN As Double = -2#     ' Pct values below this are flagged
+Private Const PCT_MAX As Double = 2#      ' Pct values above this are flagged
+Private Const COVERAGE_WARN_PCT As Double = 0.9  ' Warn if <90% of schema covered
 
 
 ' =============================================================================
@@ -68,22 +74,35 @@ End Sub
 
 ' =============================================================================
 ' ImportScenarioUI  (Dashboard button entry point)
-' Shows a file picker for <WorkbookDir>/scenarios/*.csv, runs a dry-run preview,
-' then imports on user confirmation.
+' Validates the chosen scenario, shows the report, and imports on confirmation.
+' Import blocks automatically if validation has ANY errors.
 ' =============================================================================
 Public Sub ImportScenarioUI()
     Dim scenarioPath As String
     scenarioPath = PickScenarioFile()
     If Len(scenarioPath) = 0 Then Exit Sub  ' user cancelled
 
-    ' Dry run first
-    Dim summary As String
-    summary = ImportScenarioDryRun(scenarioPath)
+    Dim r As Object: Set r = ValidateScenario(scenarioPath)
+
+    If CBool(r("HasErrors")) Then
+        MsgBox r("Report") & vbCrLf & vbCrLf & _
+               "Import BLOCKED. Fix the errors above (regenerate schema, " & _
+               "rebuild tabs, or edit the scenario file) and try again.", _
+               vbCritical, "Import Scenario -- Validation Failed"
+        Exit Sub
+    End If
+
+    Dim prompt As String
+    prompt = r("Report") & vbCrLf & vbCrLf
+    If CLng(r("WarnCount")) > 0 Then
+        prompt = prompt & "Import has " & r("WarnCount") & " warning(s). "
+    End If
+    prompt = prompt & "A snapshot of the current workbook will be archived " & _
+             "before any cell is written." & vbCrLf & vbCrLf & _
+             "Proceed with import?"
 
     Dim resp As VbMsgBoxResult
-    resp = MsgBox(summary & vbCrLf & vbCrLf & _
-                  "Proceed with import?", _
-                  vbOKCancel + vbQuestion, "Import Scenario -- Preview")
+    resp = MsgBox(prompt, vbOKCancel + vbQuestion, "Import Scenario -- Preview")
     If resp <> vbOK Then Exit Sub
 
     ImportScenario scenarioPath, dryRun:=False, silent:=False
@@ -183,6 +202,40 @@ Public Sub ImportScenario(scenarioPath As String, _
     If Len(Dir(scenarioPath)) = 0 Then
         If Not silent Then MsgBox "Scenario file not found: " & scenarioPath, vbCritical
         Exit Sub
+    End If
+
+    ' Safety rail: validate before any write. Block on errors.
+    If Not dryRun Then
+        Dim v As Object: Set v = ValidateScenario(scenarioPath)
+        If CBool(v("HasErrors")) Then
+            If Not silent Then
+                MsgBox v("Report") & vbCrLf & vbCrLf & _
+                       "Import BLOCKED due to validation errors.", _
+                       vbCritical, "Import Scenario"
+            End If
+            KernelConfig.LogError SEV_ERROR, MODULE_NAME, "E-833", _
+                "ImportScenario blocked by validation: " & v("ErrorCount") & _
+                " error(s) in " & scenarioPath, ""
+            Exit Sub
+        End If
+
+        ' Auto-archive before any write. Non-negotiable rollback rail.
+        ' If archive fails (disk full, permissions, path issue), block the
+        ' import rather than leaving the user without a restore point.
+        Dim archiveOk As Boolean
+        archiveOk = TryArchiveWorkbook()
+        If Not archiveOk Then
+            If Not silent Then
+                MsgBox "Pre-import archive failed. Import aborted to preserve " & _
+                       "rollback safety. Resolve the archive failure (check " & _
+                       ThisWorkbook.Path & "\Archive folder permissions and " & _
+                       "disk space), then retry.", _
+                       vbCritical, "Import Scenario"
+            End If
+            KernelConfig.LogError SEV_ERROR, MODULE_NAME, "E-834", _
+                "ImportScenario aborted: pre-import archive failed", scenarioPath
+            Exit Sub
+        End If
     End If
 
     Dim schemaIdx As Object
@@ -288,54 +341,289 @@ End Sub
 
 ' =============================================================================
 ' ImportScenarioDryRun
-' Returns a summary string (same numbers ImportScenario would log) without
-' writing anything. Used by ImportScenarioUI for the preview dialog.
+' Thin wrapper around ValidateScenario -- returns just the formatted report
+' string. Kept for backwards compatibility with any callers that expected a
+' single-string return.
 ' =============================================================================
 Public Function ImportScenarioDryRun(scenarioPath As String) As String
+    Dim r As Object: Set r = ValidateScenario(scenarioPath)
+    ImportScenarioDryRun = CStr(r("Report"))
+End Function
+
+
+' =============================================================================
+' ValidateScenario
+' Runs the full pre-import checklist and returns a structured result:
+'   HasErrors     (Boolean) -- at least one ERROR-severity finding
+'   ErrorCount    (Long)
+'   WarnCount     (Long)
+'   Report        (String)  -- multi-line human-readable report
+'   RowCount      (Long)
+'   WouldWrite    (Long)
+'   WouldUnchanged (Long)
+'
+' Checks performed:
+'   1. File exists and is readable
+'   2. CSV has expected header (TabName, AssumptionID, Address, Value)
+'   3. Every row has 4 fields (CSV-structure integrity)
+'   4. Every row resolves on (TabName, AssumptionID, Address) in the schema
+'   5. Target tab exists in current workbook
+'   6. Target cell resolvable (RowID found OR Address valid)
+'   7. DataType sanity per schema entry:
+'      - Pct values within [PCT_MIN, PCT_MAX]
+'      - Numeric values parse as numbers
+'      - Text values don't have leading = (formula-injection protection)
+'   8. Target cell is not locked on a protected sheet
+'   9. Coverage check: scenario covers >=COVERAGE_WARN_PCT of schema
+'  10. Schema drift: compare live Input-row count to schema metadata
+' =============================================================================
+Public Function ValidateScenario(scenarioPath As String) As Object
+    Dim result As Object: Set result = CreateObject("Scripting.Dictionary")
+    result("HasErrors") = False
+    result("ErrorCount") = CLng(0)
+    result("WarnCount") = CLng(0)
+    result("RowCount") = CLng(0)
+    result("WouldWrite") = CLng(0)
+    result("WouldUnchanged") = CLng(0)
+    result("Report") = ""
+
+    Dim errs As New Collection, warns As New Collection
+
+    ' (1) File exists
     If Len(Dir(scenarioPath)) = 0 Then
-        ImportScenarioDryRun = "Scenario file not found: " & scenarioPath
+        errs.Add "File not found: " & scenarioPath
+        result("ErrorCount") = 1
+        result("HasErrors") = True
+        result("Report") = FormatValidationReport(scenarioPath, errs, warns, result)
+        Set ValidateScenario = result
         Exit Function
     End If
 
+    ' (10) Schema drift check -- run once, non-fatal warning
+    Dim driftMsg As String: driftMsg = CheckSchemaDrift()
+    If Len(driftMsg) > 0 Then warns.Add "SCHEMA DRIFT: " & driftMsg
+
+    ' Load schema index
     Dim schemaIdx As Object: Set schemaIdx = BuildSchemaIndex()
-    Dim rows As Collection:  Set rows = ReadScenarioFile(scenarioPath)
+    If schemaIdx.Count = 0 Then
+        errs.Add "Schema is empty or unreadable: " & SchemaPath()
+        result("ErrorCount") = errs.Count
+        result("WarnCount") = warns.Count
+        result("HasErrors") = True
+        result("Report") = FormatValidationReport(scenarioPath, errs, warns, result)
+        Set ValidateScenario = result
+        Exit Function
+    End If
+
+    ' (2-3) Header + row-shape check (stream-parse to catch malformed lines before
+    ' loading full rows)
+    Dim fnum As Integer: fnum = FreeFile
+    Open scenarioPath For Input As #fnum
+    Dim ln As String
+    Dim lineNum As Long: lineNum = 0
+    Dim headerValid As Boolean: headerValid = False
+    Dim malformed As Long: malformed = 0
+    Do While Not EOF(fnum)
+        Line Input #fnum, ln
+        lineNum = lineNum + 1
+        If Len(Trim(ln)) = 0 Then GoTo NxtParseLine
+        Dim flds As Variant: flds = ParseCsvLine(ln)
+        Dim nf As Long: nf = UBound(flds) - LBound(flds) + 1
+        If lineNum = 1 Then
+            If nf = 4 And _
+               StrComp(CStr(flds(0)), "TabName", vbTextCompare) = 0 And _
+               StrComp(CStr(flds(1)), "AssumptionID", vbTextCompare) = 0 And _
+               StrComp(CStr(flds(2)), "Address", vbTextCompare) = 0 And _
+               StrComp(CStr(flds(3)), "Value", vbTextCompare) = 0 Then
+                headerValid = True
+            End If
+        Else
+            If nf <> 4 Then malformed = malformed + 1
+        End If
+NxtParseLine:
+    Loop
+    Close #fnum
+
+    If Not headerValid Then
+        errs.Add "Header row must be exactly: TabName, AssumptionID, Address, Value"
+    End If
+    If malformed > 0 Then
+        errs.Add malformed & " malformed row(s) found (expected 4 fields each)"
+    End If
+
+    ' If structural errors, stop here
+    If errs.Count > 0 Then
+        result("ErrorCount") = errs.Count
+        result("WarnCount") = warns.Count
+        result("HasErrors") = True
+        result("Report") = FormatValidationReport(scenarioPath, errs, warns, result)
+        Set ValidateScenario = result
+        Exit Function
+    End If
+
+    ' (4-9) Per-row semantic checks
+    Dim rows As Collection: Set rows = ReadScenarioFile(scenarioPath)
+    result("RowCount") = CLng(rows.Count)
 
     Dim tabCache As Object: Set tabCache = CreateObject("Scripting.Dictionary")
 
-    Dim wouldWrite As Long, wouldUnchanged As Long
-    Dim skSchema As Long, skTab As Long, skRow As Long
+    Dim orphanCount As Long: orphanCount = 0
+    Dim missingTab As Long:  missingTab = 0
+    Dim missingRow As Long:  missingRow = 0
+    Dim lockedCells As Long: lockedCells = 0
+    Dim pctRangeBad As Long: pctRangeBad = 0
+    Dim numParseBad As Long: numParseBad = 0
+    Dim textFormula As Long: textFormula = 0
+    Dim wouldWrite As Long:  wouldWrite = 0
+    Dim wouldSame As Long:   wouldSame = 0
+
+    Dim firstOrphanSample As String: firstOrphanSample = ""
+    Dim firstTabSample As String:    firstTabSample = ""
+    Dim firstRowSample As String:    firstRowSample = ""
 
     Dim i As Long
     For i = 1 To rows.Count
         Dim r As Object: Set r = rows(i)
-        Dim key As String
-        key = CStr(r("TabName")) & "||" & CStr(r("AssumptionID")) & "||" & CStr(r("Address"))
-        If Not schemaIdx.Exists(key) Then skSchema = skSchema + 1: GoTo NxtDry
+        Dim tabName As String: tabName = CStr(r("TabName"))
+        Dim assumID As String: assumID = CStr(r("AssumptionID"))
+        Dim addr As String:    addr = CStr(r("Address"))
+        Dim newVal As String:  newVal = CStr(r("Value"))
+
+        Dim key As String: key = tabName & "||" & assumID & "||" & addr
+        If Not schemaIdx.Exists(key) Then
+            orphanCount = orphanCount + 1
+            If Len(firstOrphanSample) = 0 Then
+                firstOrphanSample = tabName & " / " & assumID & " / " & addr
+            End If
+            GoTo NextValRow
+        End If
 
         Dim ws As Worksheet
-        Set ws = GetSheetCached(tabCache, CStr(r("TabName")))
-        If ws Is Nothing Then skTab = skTab + 1: GoTo NxtDry
+        Set ws = GetSheetCached(tabCache, tabName)
+        If ws Is Nothing Then
+            missingTab = missingTab + 1
+            If Len(firstTabSample) = 0 Then firstTabSample = tabName
+            GoTo NextValRow
+        End If
 
         Dim cellRef As Range
-        Set cellRef = ResolveCellForImport(ws, CStr(r("AssumptionID")), CStr(r("Address")))
-        If cellRef Is Nothing Then skRow = skRow + 1: GoTo NxtDry
+        Set cellRef = ResolveCellForImport(ws, assumID, addr)
+        If cellRef Is Nothing Then
+            missingRow = missingRow + 1
+            If Len(firstRowSample) = 0 Then firstRowSample = tabName & "!" & assumID
+            GoTo NextValRow
+        End If
 
-        If CStr(cellRef.Value) = CStr(r("Value")) Then
-            wouldUnchanged = wouldUnchanged + 1
+        ' Data-type sanity
+        Dim s As Object: Set s = schemaIdx(key)
+        Dim dt As String: dt = UCase(Trim(CStr(s("DataType"))))
+        If dt = "PCT" And IsNumeric(newVal) Then
+            If CDbl(newVal) < PCT_MIN Or CDbl(newVal) > PCT_MAX Then
+                pctRangeBad = pctRangeBad + 1
+            End If
+        ElseIf (dt = "NUMBER" Or dt = "CURRENCY") And Len(newVal) > 0 Then
+            If Not IsNumeric(newVal) Then numParseBad = numParseBad + 1
+        ElseIf dt = "TEXT" And Len(newVal) > 0 Then
+            Dim first As String: first = Left(newVal, 1)
+            If first = "=" Or first = "+" Or first = "@" Then
+                textFormula = textFormula + 1
+            End If
+        End If
+
+        ' Cell-lock check
+        If cellRef.Locked And ws.ProtectContents Then
+            lockedCells = lockedCells + 1
+        End If
+
+        ' Change preview
+        If CStr(cellRef.Value) = newVal Then
+            wouldSame = wouldSame + 1
         Else
             wouldWrite = wouldWrite + 1
         End If
-NxtDry:
+NextValRow:
     Next i
 
-    ImportScenarioDryRun = _
-        "File: " & scenarioPath & vbCrLf & _
-        "Rows in scenario:          " & rows.Count & vbCrLf & _
-        "Cells that would change:   " & wouldWrite & vbCrLf & _
-        "Cells already at value:    " & wouldUnchanged & vbCrLf & _
-        "Skipped (not in schema):   " & skSchema & vbCrLf & _
-        "Skipped (missing tab):     " & skTab & vbCrLf & _
-        "Skipped (RowID not found): " & skRow
+    result("WouldWrite") = CLng(wouldWrite)
+    result("WouldUnchanged") = CLng(wouldSame)
+
+    ' Accumulate findings by severity
+    If orphanCount > 0 Then
+        errs.Add orphanCount & " row(s) not in schema " & _
+                 "(TabName/AssumptionID/Address triple not found). " & _
+                 "First: " & firstOrphanSample
+    End If
+    If missingTab > 0 Then
+        errs.Add missingTab & " row(s) reference missing tab(s). First: " & firstTabSample
+    End If
+    If missingRow > 0 Then
+        errs.Add missingRow & " row(s) reference a RowID that can't be " & _
+                 "found on column A of the target tab. First: " & firstRowSample
+    End If
+    If lockedCells > 0 Then
+        errs.Add lockedCells & " target cell(s) are locked on a protected sheet"
+    End If
+    If numParseBad > 0 Then
+        warns.Add numParseBad & " Number/Currency value(s) are not numeric"
+    End If
+    If pctRangeBad > 0 Then
+        warns.Add pctRangeBad & " Pct value(s) outside [" & PCT_MIN & "," & PCT_MAX & "]"
+    End If
+    If textFormula > 0 Then
+        warns.Add textFormula & " Text value(s) start with =, +, or @ " & _
+                  "(will be written with NumberFormat=@ to prevent formula injection)"
+    End If
+
+    ' Coverage check
+    Dim coverage As Double
+    coverage = (rows.Count - orphanCount) / schemaIdx.Count
+    If coverage < COVERAGE_WARN_PCT Then
+        warns.Add "Coverage " & Format(coverage, "0.0%") & " of schema " & _
+                  "(" & (rows.Count - orphanCount) & " of " & schemaIdx.Count & _
+                  "). Cells not in the scenario will be LEFT AS-IS (not reset)."
+    End If
+
+    result("ErrorCount") = CLng(errs.Count)
+    result("WarnCount") = CLng(warns.Count)
+    result("HasErrors") = (errs.Count > 0)
+    result("Report") = FormatValidationReport(scenarioPath, errs, warns, result)
+
+    Set ValidateScenario = result
+End Function
+
+
+' =============================================================================
+' CheckSchemaDrift
+' Compares live Config-sheet input-row count against the SchemaRowCount /
+' InputRowCount recorded in assumptions_schema.meta.csv at generation time.
+' Returns empty string if no drift, or a short diagnostic message.
+' =============================================================================
+Private Function CheckSchemaDrift() As String
+    Dim meta As Object: Set meta = LoadSchemaMeta()
+    If meta.Count = 0 Then
+        CheckSchemaDrift = "metadata file missing (" & SchemaMetaPath() & _
+                           "). Run scripts/regen_assumptions_schema.py to generate."
+        Exit Function
+    End If
+
+    Dim expectedSchemaCount As Long
+    If meta.Exists("SchemaRowCount") Then
+        expectedSchemaCount = CLng(meta("SchemaRowCount"))
+    Else
+        expectedSchemaCount = 0
+    End If
+
+    Dim actualSchemaCount As Long
+    actualSchemaCount = CountSchemaRows()
+
+    If expectedSchemaCount > 0 And _
+       Abs(expectedSchemaCount - actualSchemaCount) > 0 Then
+        CheckSchemaDrift = "schema row count mismatch (meta says " & _
+                           expectedSchemaCount & ", actual file has " & _
+                           actualSchemaCount & "). Re-run regen script."
+    Else
+        CheckSchemaDrift = ""
+    End If
 End Function
 
 
@@ -352,9 +640,145 @@ Private Function SchemaPath() As String
                  Application.PathSeparator & SCHEMA_FILE
 End Function
 
+Private Function SchemaMetaPath() As String
+    SchemaMetaPath = ThisWorkbook.Path & Application.PathSeparator & "config" & _
+                     Application.PathSeparator & SCHEMA_META_FILE
+End Function
+
+Private Function LoadSchemaMeta() As Object
+    Dim d As Object: Set d = CreateObject("Scripting.Dictionary")
+    Dim path As String: path = SchemaMetaPath()
+    If Len(Dir(path)) = 0 Then
+        Set LoadSchemaMeta = d
+        Exit Function
+    End If
+
+    Dim fnum As Integer: fnum = FreeFile
+    Open path For Input As #fnum
+    Dim ln As String
+    Dim header As Variant: header = Empty
+    Do While Not EOF(fnum)
+        Line Input #fnum, ln
+        If Len(Trim(ln)) = 0 Then GoTo NxtMeta
+        Dim flds As Variant: flds = ParseCsvLine(ln)
+        If IsEmpty(header) Then
+            header = flds
+            GoTo NxtMeta
+        End If
+        ' Header is Key,Value -- simple flat mapping
+        If UBound(flds) >= 1 Then
+            d(CStr(flds(0))) = CStr(flds(1))
+        End If
+NxtMeta:
+    Loop
+    Close #fnum
+    Set LoadSchemaMeta = d
+End Function
+
+Private Function CountSchemaRows() As Long
+    Dim path As String: path = SchemaPath()
+    If Len(Dir(path)) = 0 Then CountSchemaRows = 0: Exit Function
+
+    Dim n As Long: n = 0
+    Dim fnum As Integer: fnum = FreeFile
+    Open path For Input As #fnum
+    Dim ln As String
+    Dim isHeader As Boolean: isHeader = True
+    Do While Not EOF(fnum)
+        Line Input #fnum, ln
+        If Len(Trim(ln)) = 0 Then GoTo NxtCnt
+        If isHeader Then
+            isHeader = False
+            GoTo NxtCnt
+        End If
+        n = n + 1
+NxtCnt:
+    Loop
+    Close #fnum
+    CountSchemaRows = n
+End Function
+
+Private Function FormatValidationReport(scenarioPath As String, _
+                                        errs As Collection, _
+                                        warns As Collection, _
+                                        result As Object) As String
+    Dim out As String
+    out = "Scenario validation -- " & scenarioPath & vbCrLf
+    out = out & String(78, "-") & vbCrLf
+
+    out = out & "  Rows in scenario:       " & result("RowCount") & vbCrLf
+    out = out & "  Cells that would write: " & result("WouldWrite") & vbCrLf
+    out = out & "  Cells unchanged:        " & result("WouldUnchanged") & vbCrLf
+    out = out & "  Errors:                 " & errs.Count & vbCrLf
+    out = out & "  Warnings:               " & warns.Count & vbCrLf
+
+    If errs.Count > 0 Then
+        out = out & vbCrLf & "ERRORS (import blocked):" & vbCrLf
+        Dim i As Long
+        For i = 1 To errs.Count
+            out = out & "  - " & errs(i) & vbCrLf
+        Next i
+    End If
+
+    If warns.Count > 0 Then
+        out = out & vbCrLf & "WARNINGS (import allowed):" & vbCrLf
+        Dim j As Long
+        For j = 1 To warns.Count
+            out = out & "  - " & warns(j) & vbCrLf
+        Next j
+    End If
+
+    If errs.Count = 0 And warns.Count = 0 Then
+        out = out & vbCrLf & "All checks passed." & vbCrLf
+    End If
+
+    FormatValidationReport = out
+End Function
+
 Private Sub EnsureDirExists(path As String)
     If Dir(path, vbDirectory) = "" Then MkDir path
 End Sub
+
+' Calls KernelWorkspaceExt.ArchiveWorkbookNow and returns True on success.
+' Unlike ArchiveWorkbookNow (which shows a MsgBox on completion), this helper
+' runs silently -- the calling Import flow handles user messaging itself.
+Private Function TryArchiveWorkbook() As Boolean
+    On Error GoTo ArchFail
+    If ThisWorkbook.Path = "" Then
+        TryArchiveWorkbook = False
+        Exit Function
+    End If
+
+    Dim archiveDir As String
+    archiveDir = ThisWorkbook.Path & Application.PathSeparator & "Archive"
+    If Dir(archiveDir, vbDirectory) = "" Then MkDir archiveDir
+
+    Dim base As String: base = ThisWorkbook.Name
+    Dim ext As String: ext = ".xlsm"
+    If InStrRev(base, ".") > 0 Then
+        ext = Mid(base, InStrRev(base, "."))
+        base = Left(base, InStrRev(base, ".") - 1)
+    End If
+
+    Dim target As String
+    target = archiveDir & Application.PathSeparator & base & "_" & _
+             Format(Now, "yyyymmdd_hhnnss") & ext
+
+    Application.ScreenUpdating = False
+    ThisWorkbook.SaveCopyAs target
+    Application.ScreenUpdating = True
+
+    KernelConfig.LogError SEV_INFO, MODULE_NAME, "I-835", _
+        "Pre-import archive saved: " & target, ""
+    TryArchiveWorkbook = True
+    Exit Function
+
+ArchFail:
+    Application.ScreenUpdating = True
+    KernelConfig.LogError SEV_ERROR, MODULE_NAME, "E-836", _
+        "Pre-import archive failed: " & Err.Description, ""
+    TryArchiveWorkbook = False
+End Function
 
 Private Function SanitizeFileName(s As String) As String
     Dim out As String: out = ""
