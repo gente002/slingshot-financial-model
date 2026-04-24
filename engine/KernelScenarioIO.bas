@@ -13,9 +13,16 @@ Option Explicit
 '          Export: walks the schema, reads each cell from the live workbook,
 '                  writes a scenario CSV to <WorkbookDir>/scenarios/<Name>.csv
 '          Import: reads a scenario CSV, validates against the schema, writes
-'                  the values back to the cells identified by AssumptionID
-'                  (RowID in column A). Address is a display hint only --
-'                  RowID is the stable lookup key.
+'                  the values back to the cells identified by
+'                  (TabName, AssumptionID, Address). RowID lookup on column A
+'                  handles row-number shifts; Address disambiguates columns for
+'                  RowIDs that span multiple cells (e.g. RBC LOB factor rows,
+'                  Staffing Expense per-quarter salary/headcount inputs).
+'
+'          Every schema row maps to exactly one cell. Quarterly replicator
+'          inputs (Col="C" in formula_tab_config) are expanded in the schema
+'          CSV to one row per quarterly/annual-total cell across the horizon,
+'          so no special runtime handling is needed.
 '
 ' Scenario file format (one row per cell):
 '     TabName,AssumptionID,Address,Value
