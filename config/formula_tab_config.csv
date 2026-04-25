@@ -1241,7 +1241,7 @@
 "UW Exec Summary","UWEX_SPACER6","48","1","Spacer","","","","","","","","","","","",""
 "UW Exec Summary","UWEX_SEC_METRICS","49","2","Label","Supporting Metrics","","Italic","","808080","","","","","","",""
 "UW Exec Summary","UWEX_PROG_COUNT","50","2","Label","Active Program Count","","","","","","","","1","","",""
-"UW Exec Summary","UWEX_PROG_COUNT","50","C","Formula","='Assumptions'!$C$5","#,##0","","","","","","","","","","TRUE"
+"UW Exec Summary","UWEX_PROG_COUNT","50","C","Input","10","#,##0","","","0000FF","","","","","User-editable per quarter. Default 10. Preserved across Run Model (only written on full Setup rebuild).","",""
 "Investments","INV_HEADER","1","2","Section","Investment Portfolio","","Bold","1F3864","FFFFFF","6","","","","",""
 "Investments","INV_BASIS","2","2","Label","Management Projections","","Italic","","808080","6","","","","",""
 "Investments","INV_SPACER1","3","1","Spacer","","","","","","","","","","",""
