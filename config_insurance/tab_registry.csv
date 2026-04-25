@@ -3,7 +3,6 @@
 "Dashboard","Kernel","Input","N","Visible","1","Model dashboard and action buttons","FALSE","","FALSE","1F3864","FALSE","FALSE","TAB_IS_INPUT"
 "Assumptions","Kernel","Input","N","Visible","2","Global financial model parameters","FALSE","","FALSE","4472C4","FALSE","FALSE","TAB_IS_INPUT"
 "UW Inputs","Domain","Input","N","Visible","3","Underwriting program assumptions","FALSE","","FALSE","4472C4","FALSE","FALSE","TAB_IS_INPUT"
-"Sales Funnel","Domain","Input","N","Visible","4","Pipeline planning: universe, cohort conversion, expected GWP","TRUE","Writing","FALSE","4472C4","FALSE","FALSE","TAB_IS_INPUT"
 "UW Exec Summary","Domain","Output","N","Visible","5","Portfolio UW P&L waterfall","TRUE","Writing","TRUE","548235","FALSE","TRUE","NONE"
 "UW Program Detail","Domain","Output","N","Visible","6","Per-program UW waterfall (Gross/Ceded/Net)","TRUE","Writing","TRUE","548235","FALSE","TRUE","NONE"
 "Capital Activity","Domain","Input","N","Visible","7","Equity raises, surplus notes, other debt","TRUE","Writing","FALSE","9DC3E6","FALSE","FALSE","TAB_IS_INPUT"

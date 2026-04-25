@@ -95,8 +95,7 @@ Public Sub PopulateUserGuide()
     ws.Cells(40, 2).Value = "- Use Snapshots (Dashboard) to save/restore different scenarios."
     ws.Cells(41, 2).Value = "- Use Export PDF (Dashboard) to create a shareable report."
     ws.Cells(42, 2).Value = "- BS Balance Check and CFS Reconciliation should always show 0 (green)."
-    ws.Cells(43, 2).Value = "- The Sales Funnel tab helps plan your pipeline before entering programs."
-    ws.Cells(44, 2).Value = "- The Curve Reference tab shows loss development patterns by trend level."
+    ws.Cells(43, 2).Value = "- The Curve Reference tab shows loss development patterns by trend level."
 
     ' Formatting
     ws.Columns(1).ColumnWidth = 5
