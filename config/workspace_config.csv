@@ -1,5 +1,5 @@
 "Setting","Value","Description"
-"WorkspacesEnabled","TRUE","Enable workspace/version control system"
+"WorkspacesEnabled","FALSE","Enable workspace/version control system (disabled 2026-04-24 -- replaced by Assumption Import/Export + Archive snapshot button). Dormant code remains in KernelWorkspace* modules."
 "AutoSaveOnRun","FALSE","Automatically save workspace after each Run Model"
 "MaxVersionsPerWorkspace","50","Maximum saved versions per workspace"
 "DefaultWorkspaceName","Main","Default workspace name on first save"
